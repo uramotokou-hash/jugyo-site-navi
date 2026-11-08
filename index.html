@@ -169,7 +169,7 @@ footer{color:var(--sub);font-size:.82rem;padding:24px 0 40px}
   <footer>
     <p>リンク先の内容・利用条件は各サイトの運営者が決めています。授業で使う前に、内容と利用規約を確認してください。「URL要確認」の印があるサイトは、リンク先が変わっている可能性があります。</p>
     <p>入力したサイトとお気に入りは、この端末のブラウザだけに保存されます（外部には送信しません）。</p>
-    <p class="noprint">掲載情報の確認日：2026年11月5日</p>
+    <p class="noprint">掲載情報の確認日：2026年11月5日〜9日</p>
   </footer>
 </main>
 
@@ -311,19 +311,19 @@ const PRESET = [
   /* ---------- 動画で学ぶ ---------- */
   {id:"p21",cat:"video",name:"NHK for School",org:"NHK",url:"https://edu.web.nhk/school/",
    desc:"Eテレの教育番組と動画クリップを、教科・学年から探せる。ほぼ全教科に対応。",
-   hint:"2025年秋にアドレスが変わりました。学校で使うときは学校コード・確認キーの入力が必要です。",
+   hint:"2025年10月に「NHK ONE」へ移り、アドレスが変わりました。学校で使うときは学校コード・確認キーの入力が必要です。",
    subj:["国語","算数","理科","社会","生活","音楽","図工","家庭","体育","外国語","道徳","総合","情報"],
-   grades:["low","mid","high","tch"],tags:["動画","番組"],acc:"学校では学校コードが必要",ok:false},
+   grades:["low","mid","high","tch"],tags:["動画","番組"],acc:"学校では学校コードが必要",ok:true},
   {id:"p06",cat:"video",name:"アッ!とメディア",org:"NHK for School",url:"https://edu.web.nhk/school/",
    desc:"小学4年生以上向けのメディア・リテラシー番組。写真やニュースの情報を読み解く力を育てる。",
    hint:"NHK for School のトップで「アッ!とメディア」と検索して開いてください。",
-   subj:["情報","国語","社会","総合"],grades:["mid","high"],tags:["メディアリテラシー","情報活用"],acc:"学校では学校コードが必要",ok:false},
+   subj:["情報","国語","社会","総合"],grades:["mid","high"],tags:["メディアリテラシー","情報活用"],acc:"学校では学校コードが必要",ok:true},
   {id:"p71",cat:"video",name:"でこぼこポン！",org:"NHK for School",url:"https://edu.web.nhk/school/tokushi/dekoboko/",
    desc:"発達が気になる子を楽しくサポートする特別支援教育番組。生活の場面や人との関わり方を動画でイメージでき、自立活動やSSTの導入に使いやすい。",
    subj:["自立活動","特活","道徳"],grades:["low","mid","high"],tags:["SST","特別支援","動画","人との関わり"],acc:"学校では学校コードが必要",ok:true},
   {id:"p22",cat:"video",name:"STEAMライブラリー",org:"経済産業省",url:"https://www.steam-library.go.jp/",
    desc:"社会の課題と教科の学びをつなぐ動画・教材。総合的な学習の時間の探究に。",
-   subj:["総合","理科","社会","算数"],grades:["high","tch"],tags:["STEAM","探究","データ"],acc:"不要",ok:false},
+   subj:["総合","理科","社会","算数"],grades:["high","tch"],tags:["STEAM","探究","データ"],acc:"不要",ok:true},
   {id:"p81",cat:"video",name:"教えて！はれるん（気象庁アニメ）",org:"気象庁",url:"https://www.jma.go.jp/jma/kishou/books/oshiete",
    desc:"天気予報や警報・注意報の大切さを学べるアニメ（約17分）。大雨や津波から身を守るポイントも入っている。",
    subj:["理科","社会","総合"],grades:["mid","high"],tags:["天気","防災","気象"],acc:"不要",ok:true},
@@ -331,13 +331,13 @@ const PRESET = [
   /* ---------- プリント・ドリル ---------- */
   {id:"p11",cat:"print",name:"ちびむすドリル",org:"パディンハウス",url:"https://happylilac.net/",
    desc:"幼児〜中学生向けの学習プリントが無料。主な教科をカバーし、イラストが多く取り組みやすい。",
-   subj:["国語","算数","理科","社会","外国語"],grades:["low","mid","high"],tags:["プリント","漢字","計算","英単語"],acc:"不要（会員登録は任意）",ok:false},
+   subj:["国語","算数","理科","社会","外国語"],grades:["low","mid","high"],tags:["プリント","漢字","計算","英単語"],acc:"不要（会員登録は任意）",ok:true},
   {id:"p12",cat:"print",name:"ぷりんときっず",org:"ぷりんときっず",url:"https://print-kids.net/",
-   desc:"幼児・小学生（主に1〜3年生）向け。かわいいデザインで、印刷代を節約できる作り。",
-   subj:["国語","算数"],grades:["low","mid"],tags:["プリント","ひっ算","九九","ひらがな"],acc:"不要",ok:false},
+   desc:"幼児・小学生（主に1〜3年生）向け。授業の進み具合に合わせて月別にプリントを探せる。学習ポスターや「表情から気持ちを読み取る」プリントもある。",
+   subj:["国語","算数","自立活動"],grades:["low","mid"],tags:["プリント","ひっ算","九九","ひらがな","表情カード"],acc:"不要",ok:true},
   {id:"p13",cat:"print",name:"すきるまドリル",org:"すきるまドリル",url:"https://sukiruma.net/",
    desc:"運筆やカタカナなど、スモールステップのプリントが多い。入学準備や個別課題にも。",
-   subj:["国語","算数","自立活動"],grades:["low","mid","high"],tags:["プリント","運筆","カタカナ","個別課題"],acc:"不要",ok:false},
+   subj:["国語","算数","自立活動"],grades:["low","mid","high"],tags:["プリント","運筆","カタカナ","個別課題"],acc:"不要",ok:true},
   {id:"p82",cat:"print",name:"家勉キッズ",org:"家勉キッズ",url:"https://ieben.net/",
    desc:"国語・算数・社会・理科・音楽の教材を学年別に整理。Web画面で学べる教材（漢字しらべ、マス計算など）と、印刷用プリント（計算ドリル、白地図、原稿用紙、五線紙など）がある。",
    subj:["国語","算数","理科","社会","音楽"],grades:["low","mid","high"],tags:["プリント","白地図","五線紙","補充学習"],acc:"不要",ok:true},
@@ -349,27 +349,27 @@ const PRESET = [
   {id:"p84",cat:"tool",name:"PhET シミュレーション（日本語版）",org:"コロラド大学",url:"https://phet.colorado.edu/ja/",
    desc:"電気・光・力・物の溶け方などを、画面上で条件を変えて実験できる無料シミュレーション。",
    subj:["理科","算数"],grades:["mid","high","tch"],tags:["実験","電気","シミュレーション"],acc:"不要",ok:true},
-  {id:"p85",cat:"tool",name:"GeoGebra（ジオジェブラ）",org:"GeoGebra",url:"https://www.geogebra.org/",
+  {id:"p85",cat:"tool",name:"GeoGebra（ジオジェブラ）",org:"GeoGebra",url:"https://www.geogebra.org/?lang=ja",
    desc:"図形やグラフを動かしながら考えられる無料の数学ソフト。図形の性質や比例・反比例の学習に。",
-   subj:["算数"],grades:["mid","high","tch"],tags:["図形","グラフ","作図"],acc:"不要（保存は登録）",ok:false},
+   subj:["算数"],grades:["mid","high","tch"],tags:["図形","グラフ","作図"],acc:"不要（保存は登録）",ok:true},
   {id:"p86",cat:"tool",name:"エデアル",org:"エデアル",url:"https://edeal-soft.com/",
    desc:"知育ゲームや学習支援アプリを無料で公開。算数・国語・英語の教材、脳トレ、百ます計算や穴埋め問題を作るツールもある。ダウンロード不要。",
    subj:["算数","国語","外国語","自立活動"],grades:["low","mid","high","tch"],tags:["ゲーム","百ます計算","ウォームアップ","教材作成"],acc:"不要",ok:true},
   {id:"p87",cat:"tool",name:"Jimitas（ジミタス）",org:"Jimitas",url:"https://jimitas.com/",
-   desc:"「地味に助かる学習コンテンツ」をうたうWebアプリ集。お金の学習、九九、ローマ字など、低学年向けの算数・国語教材をタブレットで操作できる（ご提供いただいた情報）。",
-   subj:["算数","国語"],grades:["low","mid"],tags:["お金","九九","ローマ字","タブレット"],acc:"不要",ok:false},
+   desc:"「地味に助かる学習コンテンツ」のWebアプリ集。お金の学習（1円〜99999円）、九九のアレイ図・読み上げ、筆算練習、ローマ字練習、体育の作戦ボード、色の三原色など。URLを共有するだけで授業で使える。",
+   subj:["算数","国語","体育","理科","自立活動"],grades:["low","mid","high"],tags:["お金","九九","筆算","ローマ字","作戦ボード"],acc:"不要",ok:true},
   {id:"p41",cat:"tool",name:"Viscuit（ビスケット）",org:"デジタルポケット",url:"https://www.viscuit.com/",
    desc:"文字を使わず、かいた絵を「めがね」で動かすプログラミング。低学年・特別支援学級でも使いやすい。",
    subj:["情報","図工","算数"],grades:["low","mid"],tags:["プログラミング","絵"],acc:"不要",ok:true},
   {id:"p42",cat:"tool",name:"Scratch（スクラッチ）",org:"MIT／Scratch財団",url:"https://scratch.mit.edu/",
    desc:"ブロックを組み合わせてゲームやアニメを作るプログラミング。作品の保存にはアカウントが必要。",
-   subj:["情報","算数","総合"],grades:["mid","high"],tags:["プログラミング","ゲームづくり"],acc:"作品を保存するときは必要",ok:false},
+   subj:["情報","算数","総合"],grades:["mid","high"],tags:["プログラミング","ゲームづくり"],acc:"作品を保存するときは必要",ok:true},
   {id:"p43",cat:"tool",name:"キーボー島アドベンチャー",org:"キーボード検定サイト",url:"https://kb-kentei.net/",
    desc:"級に挑戦しながらキーボード入力を練習できる、小学生向けの検定サイト。",
    subj:["情報","国語"],grades:["low","mid","high"],tags:["タイピング","ローマ字","検定"],acc:"先生が学校で登録",ok:true},
   {id:"p44",cat:"tool",name:"Hour of Code",org:"Code.org",url:"https://hourofcode.com/jp",
    desc:"1時間で体験できるプログラミング教材がたくさんある。",
-   subj:["情報","総合"],grades:["mid","high"],tags:["プログラミング","体験"],acc:"不要",ok:false},
+   subj:["情報","総合"],grades:["mid","high"],tags:["プログラミング","体験"],acc:"不要",ok:true},
 
   /* ---------- 調べ学習・資料・地図 ---------- */
   {id:"p31",cat:"research",name:"なるほど統計学園",org:"総務省統計局",url:"https://www.stat.go.jp/naruhodo/",
@@ -380,7 +380,7 @@ const PRESET = [
    subj:["社会","算数","総合"],grades:["high","tch"],tags:["統計","グラフ"],acc:"不要",ok:true},
   {id:"p33",cat:"research",name:"地理院地図",org:"国土地理院",url:"https://maps.gsi.go.jp/",
    desc:"地形図・写真・標高・災害情報が見られるWeb地図。学区の地図づくりや防災学習に。",
-   subj:["社会","理科","総合"],grades:["mid","high","tch"],tags:["地図","防災","地形"],acc:"不要",ok:false},
+   subj:["社会","理科","総合"],grades:["mid","high","tch"],tags:["地図","防災","地形"],acc:"不要",ok:true},
   {id:"p88",cat:"research",name:"ハザードマップポータルサイト",org:"国土交通省・国土地理院",url:"https://disaportal.gsi.go.jp/",
    desc:"「重ねるハザードマップ」で、浸水・土砂災害・地形などの災害リスクを地図に重ねて確認できる。市町村のハザードマップも探せる。",
    subj:["社会","理科","総合"],grades:["mid","high","tch"],tags:["防災","地図","ハザードマップ"],acc:"不要",ok:true},
@@ -394,14 +394,14 @@ const PRESET = [
    desc:"著作権が切れた作品などを無料で読めるインターネットの図書館。教科書に出てくる作家の作品も多い。",
    subj:["国語","道徳"],grades:["mid","high","tch"],tags:["読書","物語","作家"],acc:"不要",ok:true},
   {id:"p34",cat:"research",name:"国際子ども図書館",org:"国立国会図書館",url:"https://www.kodomo.go.jp/",
-   desc:"子どもの本の情報や、調べもののための案内がある。読書・調べ学習に。",
-   subj:["国語","総合"],grades:["mid","high","tch"],tags:["本","読書","調べ学習"],acc:"不要",ok:false},
+   desc:"国立の児童書専門図書館。小学生向けの「しらべる・まなぶ・よむ」で、調べ方や本の探し方を学べる。",
+   subj:["国語","総合"],grades:["mid","high","tch"],tags:["本","読書","調べ学習"],acc:"不要",ok:true},
   {id:"p92",cat:"research",name:"こどもページ（農林水産省）",org:"農林水産省",url:"https://www.maff.go.jp/j/kids/",
    desc:"食べ物・農業・森林・食品安全などについて、子ども向けに学べるページとリンク集。",
    subj:["社会","家庭","総合"],grades:["mid","high"],tags:["食育","農業","食べ物"],acc:"不要",ok:true},
-  {id:"p93",cat:"research",name:"SDGsポータル（日本ユニセフ協会）",org:"日本ユニセフ協会",url:"https://www.unicef.or.jp/kodomo/sdgs/",
-   desc:"SDGsについて子ども向けに学べるサイト。総合的な学習の時間の導入に。",
-   subj:["総合","社会","道徳"],grades:["mid","high"],tags:["SDGs","国際理解"],acc:"不要",ok:false},
+  {id:"p93",cat:"research",name:"SDGs CLUB（日本ユニセフ協会）",org:"日本ユニセフ協会",url:"https://www.unicef.or.jp/kodomo/sdgs/",
+   desc:"SDGsの17の目標とターゲットを子ども向けのことばで解説。データや映像で課題を学べる。総合的な学習の時間の導入に。",
+   subj:["総合","社会","道徳"],grades:["mid","high"],tags:["SDGs","国際理解"],acc:"不要",ok:true},
   {id:"p94",cat:"research",name:"おうちでチャレンジ！図工の時間",org:"日本文教出版",url:"https://www.nichibun-g.co.jp/learning_support/zuko/",
    desc:"家にある材料でできる工作などを紹介。図工の家庭学習やアイデア集めに。",
    subj:["図工"],grades:["low","mid","high"],tags:["工作","家庭学習"],acc:"不要",ok:false},
@@ -424,7 +424,7 @@ const PRESET = [
    subj:["情報","道徳","特活"],grades:["tch"],tags:["事例","授業資料"],acc:"不要",ok:true},
   {id:"p05",cat:"moral",name:"Be Internet Awesome（インターランド）",org:"Google",url:"https://beinternetawesome.withgoogle.com/ja_jp",
    desc:"ゲーム「インターランド」で、パスワードや個人情報の守り方、思いやりのある使い方を楽しく学べる。",
-   subj:["情報","道徳"],grades:["mid","high"],tags:["ゲーム","パスワード"],acc:"不要",ok:false},
+   subj:["情報","道徳"],grades:["mid","high"],tags:["ゲーム","パスワード"],acc:"不要",ok:true},
 
   /* ---------- 特別支援・自立活動・SST ---------- */
   {id:"s01",cat:"sped",name:"やんちゃワーク",org:"公認心理師すぅさん ほか",url:"https://yanchawork.com/",
@@ -462,9 +462,9 @@ const PRESET = [
   {id:"p53",cat:"teacher",name:"統計学習の指導のために（先生向け）",org:"総務省統計局",url:"https://www.stat.go.jp/teacher/",
    desc:"統計調査の結果を使った授業モデルや補助教材。算数「データの活用」に。",
    subj:["算数","社会"],grades:["tch"],tags:["統計","授業モデル"],acc:"不要",ok:true},
-  {id:"p54",cat:"teacher",name:"子供の学び応援サイト",org:"文部科学省",url:"https://www.mext.go.jp/a_menu/ikusei/gakusyushien/index_00001.htm",
-   desc:"家庭や学校で使える学習支援コンテンツを教科ごとにまとめたポータル。",
-   subj:["国語","算数","理科","社会","外国語","音楽","図工","家庭","体育"],grades:["low","mid","high","tch"],tags:["ポータル","家庭学習"],acc:"不要",ok:false}
+  {id:"p54",cat:"research",name:"きみの好き！応援サイト たのしくまなび隊",org:"文部科学省",url:"https://tanoshikumanabitai.mext.go.jp/",
+   desc:"タブレットで無料で使える学習コンテンツを300件以上紹介するポータル。プログラミング・英語・理科・宇宙・運動など。旧「子供の学び応援サイト」が2024年に生まれ変わったもの。",
+   subj:["国語","算数","理科","社会","外国語","音楽","図工","家庭","体育"],grades:["low","mid","high","tch"],tags:["ポータル","家庭学習"],acc:"不要",ok:true}
 ];
 
 /* ===== 保存 ===== */
@@ -482,7 +482,7 @@ if(typeof state.autoShot!=="boolean") state.autoShot=true;
 
 /* ===== サイトの画面（サムネイル） ===== */
 function hostOf(u){ try{ return new URL(u).hostname.replace(/^www\./,""); }catch(e){ return ""; } }
-function autoShotUrl(u, w){ return "https://s.wordpress.com/mshots/v1/" + encodeURIComponent(u) + "?w=" + (w||400); }
+function autoShotUrl(u, w){ return "https://s.wordpress.com/mshots/v1/" + encodeURIComponent(u) + "?w=" + (w||400) + "&h=" + Math.round((w||400)*0.75); }
 function placeholder(s){
   return `<span class="ph" style="background:${catOf(s.cat).color}"><b>${esc((s.name||"?").replace(/^[「（(]/,"").charAt(0))}</b><small>${esc(hostOf(s.url))}</small></span>`;
 }
@@ -494,7 +494,7 @@ function shotSrc(s, w){
 }
 function thumbHtml(s, cls){
   const sh=shotSrc(s,400);
-  const img = sh ? `<img src="${esc(sh.src)}" alt="${esc(s.name)}のトップ画面" loading="lazy">` : "";
+  const img = sh ? `<img src="${esc(sh.src)}" alt="${esc(s.name)}のトップ画面" loading="lazy"${sh.own?"":" data-auto=\"1\""}>` : "";
   return `<button type="button" class="${cls||"thumb"}" data-shot="${esc(s.id)}" aria-label="${esc(s.name)}の画面を大きく見る">${placeholder(s)}${img}${sh&&sh.own?'<span class="mark">登録した画面</span>':""}</button>`;
 }
 load();
@@ -822,6 +822,8 @@ $("#autoShot").setAttribute("aria-pressed", state.autoShot);
 $("#autoShot").onclick=()=>{ state.autoShot=!state.autoShot; $("#autoShot").setAttribute("aria-pressed",state.autoShot); save(); render(); };
 
 makeChips(); render();
+/* 画面写真サービスは、はじめての読みこみで「準備中」の画像を返すことがあるため、少し待って一度だけ読みこみ直す */
+setTimeout(()=>{ document.querySelectorAll('img[data-auto]').forEach(im=>{ if(!/[&?]r=1/.test(im.src)) im.src = im.src + "&r=1"; }); }, 9000);
 </script>
 </body>
 </html>

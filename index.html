@@ -93,9 +93,10 @@ footer{color:var(--sub);font-size:.82rem;padding:24px 0 40px}
 .head{display:flex;gap:10px;align-items:flex-start;padding-right:34px}
 .thumb{flex:0 0 124px;width:124px;height:78px;border-radius:8px;overflow:hidden;border:1px solid var(--line);background:#f1f4f3;position:relative;cursor:zoom-in;padding:0}
 .thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;display:block;background:#fff}
-.thumb .ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-weight:700;text-align:center;line-height:1.2;padding:4px}
-.thumb .ph b{font-size:1.5rem}
-.thumb .ph small{font-size:.62rem;opacity:.95;word-break:break-all;font-weight:400}
+.ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-weight:700;text-align:center;line-height:1.2;padding:4px}
+.ph b{font-size:1.5rem}
+.ph img.fav{position:static!important;width:30px!important;height:30px!important;border-radius:7px;background:#fff;padding:3px;margin-bottom:3px;object-fit:contain}
+.ph small{font-size:.62rem;opacity:.95;font-weight:400;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .thumb .mark{position:absolute;right:3px;bottom:3px;background:rgba(0,0,0,.6);color:#fff;font-size:.6rem;border-radius:4px;padding:0 4px}
 .head-text{min-width:0}
 .head-text h3{padding-right:0}
@@ -161,7 +162,7 @@ footer{color:var(--sub);font-size:.82rem;padding:24px 0 40px}
     </div>
     <div class="row"><span class="label">画面</span>
       <button class="chip" id="autoShot" aria-pressed="true">サイトの画面を自動で表示</button>
-      <small style="color:var(--sub)">無料の画面写真サービス（WordPress.com mShots）にサイトのURLを送って表示します。出ないときは、各サイトの「メモ・画面を登録」から自分のスクショを入れられます。</small>
+      <small style="color:var(--sub)">無料の画面写真サービス（WordPress.com mShots、取れないときは thum.io）にサイトのURLを送って表示します。写真がないときはサイトのアイコン（Googleのファビコン表示）を出します。出ないときは、各サイトの「メモ・画面を登録」から自分のスクショを入れられます。</small>
     </div>
   </div>
   <div class="count" id="count"></div>
@@ -513,8 +514,13 @@ if(typeof state.autoShot!=="boolean") state.autoShot=true;
 /* ===== サイトの画面（サムネイル） ===== */
 function hostOf(u){ try{ return new URL(u).hostname.replace(/^www\./,""); }catch(e){ return ""; } }
 function autoShotUrl(u, w){ return "https://s.wordpress.com/mshots/v1/" + encodeURIComponent(u) + "?w=" + (w||400) + "&h=" + Math.round((w||400)*0.75); }
+/* 写真が取れないときの代わり2：ほかの画面写真サービス */
+function backupShotUrl(u, w){ return "https://image.thum.io/get/width/" + (w||400) + "/crop/" + Math.round((w||400)*2.25) + "/noanimate/" + u; }
+/* 代わり3：サイトのアイコン（ファビコン）を色の四角にのせる */
+function faviconUrl(u){ const h=hostOf(u); return h ? "https://www.google.com/s2/favicons?domain=" + encodeURIComponent(h) + "&sz=64" : ""; }
 function placeholder(s){
-  return `<span class="ph" style="background:${catOf(s.cat).color}"><b>${esc((s.name||"?").replace(/^[「（(]/,"").charAt(0))}</b><small>${esc(hostOf(s.url))}</small></span>`;
+  const fv = state.autoShot ? faviconUrl(s.url) : "";
+  return `<span class="ph" style="background:${catOf(s.cat).color}">${fv?`<img class="fav" src="${esc(fv)}" alt="" loading="lazy">`:""}<b>${esc((s.name||"?").replace(/^[「（(]/,"").charAt(0))}</b><small>${esc(hostOf(s.url))}</small></span>`;
 }
 function shotSrc(s, w){
   if(state.shots[s.id]) return {src:state.shots[s.id], own:true};
@@ -524,7 +530,7 @@ function shotSrc(s, w){
 }
 function thumbHtml(s, cls){
   const sh=shotSrc(s,400);
-  const img = sh ? `<img src="${esc(sh.src)}" alt="${esc(s.name)}のトップ画面" loading="lazy"${sh.own?"":" data-auto=\"1\""}>` : "";
+  const img = sh ? `<img src="${esc(sh.src)}" alt="${esc(s.name)}のトップ画面" loading="lazy"${sh.own?"":` data-auto="1" data-u="${esc(safeUrl(s.url))}"`}>` : "";
   return `<button type="button" class="${cls||"thumb"}" data-shot="${esc(s.id)}" aria-label="${esc(s.name)}の画面を大きく見る">${placeholder(s)}${img}${sh&&sh.own?'<span class="mark">登録した画面</span>':""}</button>`;
 }
 load();
@@ -804,7 +810,12 @@ $("#resetBtn").onclick=()=>confirmBox("追加したサイト・お気に入り�
 });
 
 /* ===== 画面の写真：大きく見る・登録 ===== */
-document.addEventListener("error",e=>{ const t=e.target; if(t && t.tagName==="IMG" && t.closest(".thumb,.kthumb")) t.remove(); },true);
+document.addEventListener("error",e=>{
+  const t=e.target; if(!t || t.tagName!=="IMG" || !t.closest(".thumb,.kthumb")) return;
+  // 1つめの写真サービスで取れなかったら、2つめのサービスをためす
+  if(t.dataset.auto && !t.dataset.backup && t.dataset.u){ t.dataset.backup="1"; t.src=backupShotUrl(t.dataset.u, 400); return; }
+  t.remove();
+},true);
 function openShot(s){
   if(!s) return;
   const sh=shotSrc(s,1000), u=safeUrl(s.url);
@@ -853,7 +864,13 @@ $("#autoShot").onclick=()=>{ state.autoShot=!state.autoShot; $("#autoShot").setA
 
 makeChips(); render();
 /* 画面写真サービスは、はじめての読みこみで「準備中」の画像を返すことがあるため、少し待って一度だけ読みこみ直す */
-setTimeout(()=>{ document.querySelectorAll('img[data-auto]').forEach(im=>{ if(!/[&?]r=1/.test(im.src)) im.src = im.src + "&r=1"; }); }, 9000);
+function retryAutoShots(n){
+  document.querySelectorAll('img[data-auto]:not([data-backup])').forEach(im=>{
+    im.src = im.src.replace(/&r=\d+$/,"") + "&r=" + n;
+  });
+}
+setTimeout(()=>retryAutoShots(1), 9000);
+setTimeout(()=>retryAutoShots(2), 30000);
 </script>
 </body>
 </html>

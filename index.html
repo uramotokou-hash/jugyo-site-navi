@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>授業サイトナビ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --bg:#f6f8f7; --card:#fff; --ink:#1f2a2e; --sub:#5b6b70; --line:#dfe6e4;
+  --main:#2f7d6d; --main-soft:#e3f2ee; --accent:#e8902a; --warn:#b5541c; --warn-soft:#fdeee3;
+  --star:#e8b10a; --radius:14px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"BIZ UDPGothic","Hiragino Sans","Yu Gothic",sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
+button,input,select,textarea{font-family:inherit;font-size:1rem}
+a{color:inherit}
+header{background:var(--main);color:#fff;padding:18px 16px 14px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+header h1{margin:0;font-size:1.5rem;letter-spacing:.04em}
+header p{margin:4px 0 0;font-size:.92rem;opacity:.92}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.tbtn{border:2px solid #fff;background:transparent;color:#fff;border-radius:999px;padding:7px 14px;font-weight:700;cursor:pointer}
+.tbtn.solid{background:#fff;color:var(--main)}
+.tbtn:focus-visible,.chip:focus-visible,.btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin:16px 0}
+.search{width:100%;padding:12px 14px;border:2px solid var(--line);border-radius:10px;font-size:1.05rem}
+.search:focus{border-color:var(--main);outline:none}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.row .label{font-size:.85rem;color:var(--sub);font-weight:700;min-width:3.5em}
+.chip{border:2px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;cursor:pointer;font-size:.92rem;color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--main);border-color:var(--main);color:#fff;font-weight:700}
+.chip[aria-pressed="true"]::before{content:"✓ "}
+
+.count{color:var(--sub);font-size:.9rem;margin:4px 2px 8px}
+.section-title{font-size:1.1rem;margin:22px 2px 8px;display:flex;align-items:center;gap:8px}
+.section-title .dot{width:12px;height:12px;border-radius:50%}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:flex;flex-direction:column;gap:6px;position:relative}
+.card h3{margin:0;font-size:1.08rem;padding-right:36px}
+.card .org{font-size:.82rem;color:var(--sub)}
+.card .desc{font-size:.93rem;margin:2px 0}
+.card .hint{font-size:.85rem;background:var(--main-soft);border-radius:8px;padding:6px 8px}
+.tags{display:flex;gap:5px;flex-wrap:wrap}
+.tag{font-size:.75rem;border:1px solid var(--line);border-radius:6px;padding:1px 7px;color:var(--sub);background:#fafcfb}
+.tag.acc{border-color:#c9dcd7}
+.tag.warn{border-color:#f0c9ad;background:var(--warn-soft);color:var(--warn);font-weight:700}
+.tag.mine{border-color:#f2d39b;background:#fff6e3;color:#8a5a00;font-weight:700}
+.star{position:absolute;top:10px;right:10px;border:none;background:none;font-size:1.5rem;cursor:pointer;color:#c3cbc9;line-height:1;padding:4px}
+.star[aria-pressed="true"]{color:var(--star)}
+.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:6px}
+.btn{border:2px solid var(--main);background:#fff;color:var(--main);border-radius:10px;padding:7px 12px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:4px;font-size:.92rem}
+.btn.primary{background:var(--main);color:#fff}
+.btn.ghost{border-color:var(--line);color:var(--sub)}
+.empty{text-align:center;color:var(--sub);padding:30px 10px}
+
+/* dialog */
+.overlay{position:fixed;inset:0;background:rgba(20,30,30,.45);display:none;align-items:center;justify-content:center;padding:14px;z-index:50}
+.overlay.open{display:flex}
+.dialog{background:#fff;border-radius:16px;max-width:560px;width:100%;max-height:92vh;overflow:auto;padding:18px}
+.dialog h2{margin:0 0 10px;font-size:1.2rem}
+.field{margin-bottom:10px}
+.field label{display:block;font-weight:700;font-size:.9rem;margin-bottom:3px}
+.field input,.field select,.field textarea{width:100%;padding:9px 10px;border:2px solid var(--line);border-radius:8px}
+.field small{color:var(--sub)}
+.err{color:var(--warn);font-weight:700;font-size:.9rem;min-height:1.2em}
+.dialog .actions{justify-content:flex-end}
+#qrBox{display:flex;justify-content:center;padding:10px}
+#qrBox img,#qrBox canvas{width:240px;height:240px}
+.qrurl{word-break:break-all;text-align:center;font-size:.85rem;color:var(--sub)}
+.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#1f2a2e;color:#fff;padding:10px 16px;border-radius:10px;opacity:0;transition:.25s;pointer-events:none;z-index:80}
+.toast.show{opacity:1}
+
+/* kids mode */
+#kids{display:none;position:fixed;inset:0;background:#fffdf6;z-index:40;overflow:auto;padding:18px}
+#kids.open{display:block}
+#kids h2{font-size:1.6rem;margin:0 0 12px;text-align:center}
+.kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px;max-width:1080px;margin:0 auto}
+.kcard{background:#fff;border:3px solid var(--main);border-radius:18px;padding:16px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center}
+.kcard .kname{font-size:1.3rem;font-weight:700}
+.kcard a{font-size:1.15rem;padding:12px 18px;width:100%;justify-content:center}
+.kqr img,.kqr canvas{width:140px;height:140px}
+.kclose{position:fixed;top:12px;right:12px;z-index:41}
+
+footer{color:var(--sub);font-size:.82rem;padding:24px 0 40px}
+.url-print{display:none}
+.tag.subj{border-color:#bcd3ea;background:#eef5fc;color:#2b5a8c}
+
+/* thumbnails */
+.head{display:flex;gap:10px;align-items:flex-start;padding-right:34px}
+.thumb{flex:0 0 124px;width:124px;height:78px;border-radius:8px;overflow:hidden;border:1px solid var(--line);background:#f1f4f3;position:relative;cursor:zoom-in;padding:0}
+.thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;display:block;background:#fff}
+.thumb .ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-weight:700;text-align:center;line-height:1.2;padding:4px}
+.thumb .ph b{font-size:1.5rem}
+.thumb .ph small{font-size:.62rem;opacity:.95;word-break:break-all;font-weight:400}
+.thumb .mark{position:absolute;right:3px;bottom:3px;background:rgba(0,0,0,.6);color:#fff;font-size:.6rem;border-radius:4px;padding:0 4px}
+.head-text{min-width:0}
+.head-text h3{padding-right:0}
+#bigShot{max-width:100%;border-radius:10px;border:1px solid var(--line);display:block;margin:0 auto}
+.shotbox{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.shotbox img{width:140px;height:88px;object-fit:cover;object-position:top;border-radius:8px;border:1px solid var(--line)}
+.kcard .kthumb{width:100%;height:120px;border-radius:12px;overflow:hidden;border:1px solid var(--line);position:relative}
+.kcard .kthumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;background:#fff}
+@media (max-width:420px){.thumb{flex-basis:96px;width:96px;height:62px}}
+
+/* handout sheet */
+#sheet{display:none;position:fixed;inset:0;background:#e9eeec;z-index:45;overflow:auto;padding:14px}
+#sheet.open{display:block}
+.sheet-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;max-width:210mm;margin:0 auto}
+.sheet-opt{display:flex;gap:6px;align-items:center;font-size:.92rem;font-weight:700}
+.sheet-opt select{padding:6px;border-radius:8px;border:2px solid var(--line)}
+.sheet-note{max-width:210mm;margin:6px auto 10px;font-size:.82rem;color:var(--sub)}
+.paper{background:#fff;width:210mm;max-width:100%;min-height:297mm;margin:0 auto;padding:14mm 12mm;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+.paper-title{font-size:1.6rem;margin:0 0 4px;border-bottom:3px solid var(--main);padding-bottom:4px}
+.paper-lead{margin:0 0 10px;font-size:.95rem}
+.paper-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pitem{display:flex;gap:10px;border:1.5px solid #9fb3ae;border-radius:10px;padding:8px;break-inside:avoid;align-items:flex-start}
+.pitem .pq img,.pitem .pq canvas{display:block}
+.pitem .pname{font-weight:700;font-size:1.05rem;line-height:1.35}
+.pitem .pdesc{font-size:.8rem;margin-top:3px;line-height:1.45}
+.pitem .purl{font-size:.68rem;color:#555;word-break:break-all;margin-top:3px}
+[contenteditable]:focus{outline:2px dashed var(--accent);outline-offset:2px}
+
+@media print{
+  @page{size:A4;margin:0}
+  body.printing-sheet > *:not(#sheet){display:none!important}
+  body.printing-sheet #sheet{position:static;padding:0;background:#fff;overflow:visible}
+  body.printing-sheet .sheet-bar,body.printing-sheet .sheet-note{display:none!important}
+  body.printing-sheet .paper{box-shadow:none;width:auto;min-height:0;margin:0}
+  body:not(.printing-sheet) header .toolbar,body:not(.printing-sheet) .panel,body:not(.printing-sheet) .star,body:not(.printing-sheet) .actions{display:none!important}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>授業サイトナビ</h1>
+    <p>全教科・自立活動で使えるサイトを、教科から探してすぐ開けます。QRコードつきの配布プリントも作れます。</p>
+    <div class="toolbar">
+      <button class="tbtn solid" id="addBtn">＋ サイトを追加</button>
+      <button class="tbtn" id="kidsBtn">子どもに見せる（★のサイト）</button>
+      <button class="tbtn" id="sheetBtn">QRつき配布プリント（★のサイト）</button>
+      <button class="tbtn" id="dataBtn">データの保存・読みこみ</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="panel">
+    <input class="search" id="q" type="search" placeholder="さがす（例：情報モラル、九九、地図、タイピング）" aria-label="サイトをさがす">
+    <div class="row" id="subjRow"><span class="label">教科</span></div>
+    <div class="row" id="catRow"><span class="label">種類</span></div>
+    <div class="row" id="gradeRow"><span class="label">対象</span></div>
+    <div class="row"><span class="label">しぼる</span>
+      <button class="chip" id="favOnly" aria-pressed="false">★お気に入りだけ</button>
+      <button class="chip" id="noAcc" aria-pressed="false">登録なしで使える</button>
+      <button class="chip" id="showHidden" aria-pressed="false">かくしたサイトも表示</button>
+    </div>
+    <div class="row"><span class="label">画面</span>
+      <button class="chip" id="autoShot" aria-pressed="true">サイトの画面を自動で表示</button>
+      <small style="color:var(--sub)">無料の画面写真サービス（WordPress.com mShots）にサイトのURLを送って表示します。出ないときは、各サイトの「メモ・画面を登録」から自分のスクショを入れられます。</small>
+    </div>
+  </div>
+  <div class="count" id="count"></div>
+  <div id="list"></div>
+  <footer>
+    <p>リンク先の内容・利用条件は各サイトの運営者が決めています。授業で使う前に、内容と利用規約を確認してください。「URL要確認」の印があるサイトは、リンク先が変わっている可能性があります。</p>
+    <p>入力したサイトとお気に入りは、この端末のブラウザだけに保存されます（外部には送信しません）。</p>
+    <p class="noprint">掲載情報の確認日：2026年11月5日</p>
+  </footer>
+</main>
+
+<!-- edit dialog -->
+<div class="overlay" id="editOv" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+  <div class="dialog">
+    <h2 id="editTitle">サイトを追加</h2>
+    <form id="editForm">
+      <div class="field"><label for="fName">サイト名（必須）</label><input id="fName" maxlength="60" required></div>
+      <div class="field"><label for="fUrl">URL（必須）</label><input id="fUrl" type="text" inputmode="url" autocomplete="off" placeholder="https://"></div>
+      <div class="field"><label for="fCat">分類</label><select id="fCat"></select></div>
+      <div class="field"><label>教科</label><div class="row" id="fSubj" style="margin-top:0"></div></div>
+      <div class="field"><label>対象</label><div class="row" id="fGrades" style="margin-top:0"></div></div>
+      <div class="field"><label for="fDesc">メモ・使い方</label><textarea id="fDesc" rows="3" maxlength="200" placeholder="例：5年社会「工業」の導入で使う"></textarea></div>
+      <div class="field"><label for="fTags">キーワード（読点「、」で区切る）</label><input id="fTags" placeholder="例：社会、工業、動画"></div>
+      <div class="field"><label for="fShot">画面の写真（トップ画面のスクショ）</label>
+        <div class="shotbox"><img id="fShotPrev" alt="登録した画面" style="display:none">
+          <input id="fShot" type="file" accept="image/*">
+          <button type="button" class="btn ghost" id="fShotDel" style="display:none">写真を外す</button></div>
+        <small>スクショを選ぶか、この画面で貼りつけ（Ctrl+V／⌘+V）できます。小さくしてこの端末に保存します。</small></div>
+      <div class="err" id="fErr"></div>
+      <div class="actions">
+        <button type="button" class="btn ghost" id="delBtn" style="margin-right:auto;display:none">削除</button>
+        <button type="button" class="btn ghost" data-close>やめる</button>
+        <button type="submit" class="btn primary">保存する</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- qr dialog -->
+<div class="overlay" id="qrOv" role="dialog" aria-modal="true" aria-labelledby="qrTitle">
+  <div class="dialog" style="max-width:380px;text-align:center">
+    <h2 id="qrTitle">QRコード</h2>
+    <div id="qrBox"></div>
+    <p class="qrurl" id="qrUrl"></p>
+    <p style="font-size:.85rem;color:var(--sub)">大型テレビに映して、子どものタブレットで読みとれます。</p>
+    <div class="actions" style="justify-content:center">
+      <button class="btn" id="copyUrl">URLをコピー</button>
+      <button class="btn primary" data-close>とじる</button>
+    </div>
+  </div>
+</div>
+
+<!-- big screenshot dialog -->
+<div class="overlay" id="shotOv" role="dialog" aria-modal="true" aria-labelledby="shotTitle">
+  <div class="dialog" style="max-width:760px">
+    <h2 id="shotTitle">サイトの画面</h2>
+    <img id="bigShot" alt="">
+    <p class="qrurl" id="shotNote"></p>
+    <div class="actions">
+      <a class="btn primary" id="shotOpen" target="_blank" rel="noopener noreferrer">このサイトをひらく ↗</a>
+      <button class="btn ghost" data-close>とじる</button>
+    </div>
+  </div>
+</div>
+
+<!-- data dialog -->
+<div class="overlay" id="dataOv" role="dialog" aria-modal="true" aria-labelledby="dataTitle">
+  <div class="dialog">
+    <h2 id="dataTitle">データの保存・読みこみ</h2>
+    <p style="font-size:.92rem">追加したサイト・お気に入り・かくした設定を文字データにして、別の端末へ移せます。</p>
+    <div class="actions" style="justify-content:flex-start">
+      <button class="btn primary" id="exportBtn">データをコピー</button>
+    </div>
+    <div class="field" style="margin-top:12px">
+      <label for="importTxt">読みこむデータを貼りつけ</label>
+      <textarea id="importTxt" rows="5" placeholder="コピーしたデータをここに貼りつけ"></textarea>
+    </div>
+    <div class="err" id="impErr"></div>
+    <div class="actions">
+      <button class="btn ghost" id="resetBtn" style="margin-right:auto">はじめの状態にもどす</button>
+      <button class="btn ghost" data-close>とじる</button>
+      <button class="btn primary" id="importBtn">読みこむ</button>
+    </div>
+  </div>
+</div>
+
+<!-- confirm dialog -->
+<div class="overlay" id="cfOv" role="dialog" aria-modal="true" aria-labelledby="cfTitle">
+  <div class="dialog" style="max-width:400px">
+    <h2 id="cfTitle">確認</h2>
+    <p id="cfMsg"></p>
+    <div class="actions">
+      <button class="btn ghost" data-close>やめる</button>
+      <button class="btn primary" id="cfOk">はい</button>
+    </div>
+  </div>
+</div>
+
+<!-- kids view -->
+<section id="kids" aria-label="子ども向け画面">
+  <button class="btn primary kclose" id="kidsClose">✕ もどる</button>
+  <h2>きょう つかう サイト</h2>
+  <div class="kgrid" id="kgrid"></div>
+</section>
+
+<!-- handout sheet -->
+<section id="sheet" aria-label="QRつき配布プリント">
+  <div class="sheet-bar">
+    <button class="btn" id="sheetClose">✕ もどる</button>
+    <label class="sheet-opt">QRの大きさ
+      <select id="sheetSize"><option value="90">小（1枚に多く）</option><option value="120" selected>中</option><option value="160">大（掲示用）</option></select>
+    </label>
+    <label class="sheet-opt"><input type="checkbox" id="sheetDesc" checked> 説明文をのせる</label>
+    <button class="btn primary" id="sheetPrint">印刷する</button>
+  </div>
+  <p class="sheet-note">題名とひとことは、そのまま書きかえられます。印刷はブラウザで直接ひらいたとき（GitHub Pagesなど）に使えます。</p>
+  <div class="paper" id="paper">
+    <h1 class="paper-title" contenteditable="true" spellcheck="false">授業で使うサイト</h1>
+    <p class="paper-lead" contenteditable="true" spellcheck="false">タブレットのカメラでQRコードを読みとって、サイトをひらきましょう。</p>
+    <div class="paper-grid" id="paperGrid"></div>
+  </div>
+</section>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ===== 種類・教科・対象 ===== */
+const CATS = [
+  {id:"video",   name:"動画で学ぶ",               color:"#c2477a"},
+  {id:"print",   name:"プリント・ドリル",         color:"#e8902a"},
+  {id:"tool",    name:"Webアプリ・ツール",        color:"#7a58b8"},
+  {id:"research",name:"調べ学習・資料・地図",     color:"#3b6fb6"},
+  {id:"moral",   name:"情報モラル",               color:"#2f7d6d"},
+  {id:"sped",    name:"特別支援・自立活動・SST",  color:"#d0613a"},
+  {id:"teacher", name:"先生のための資料",         color:"#5b6b70"},
+  {id:"mine",    name:"自分で追加したサイト",     color:"#8a5a00"}
+];
+const SUBJECTS = ["国語","算数","理科","社会","生活","音楽","図工","家庭","体育","外国語","道徳","総合","特活","自立活動","情報"];
+const GRADES = [
+  {id:"low", name:"低学年"},{id:"mid", name:"中学年"},{id:"high", name:"高学年"},{id:"tch", name:"先生・保護者"}
+];
+
+/* ===== 最初から入っているサイト =====
+   ok:true  = 2026-11-05に公式ページ・公的資料で確認
+   ok:false = URL要確認（リンク先が変わっている可能性） */
+const PRESET = [
+  /* ---------- 動画で学ぶ ---------- */
+  {id:"p21",cat:"video",name:"NHK for School",org:"NHK",url:"https://edu.web.nhk/school/",
+   desc:"Eテレの教育番組と動画クリップを、教科・学年から探せる。ほぼ全教科に対応。",
+   hint:"2025年秋にアドレスが変わりました。学校で使うときは学校コード・確認キーの入力が必要です。",
+   subj:["国語","算数","理科","社会","生活","音楽","図工","家庭","体育","外国語","道徳","総合","情報"],
+   grades:["low","mid","high","tch"],tags:["動画","番組"],acc:"学校では学校コードが必要",ok:false},
+  {id:"p06",cat:"video",name:"アッ!とメディア",org:"NHK for School",url:"https://edu.web.nhk/school/",
+   desc:"小学4年生以上向けのメディア・リテラシー番組。写真やニュースの情報を読み解く力を育てる。",
+   hint:"NHK for School のトップで「アッ!とメディア」と検索して開いてください。",
+   subj:["情報","国語","社会","総合"],grades:["mid","high"],tags:["メディアリテラシー","情報活用"],acc:"学校では学校コードが必要",ok:false},
+  {id:"p71",cat:"video",name:"でこぼこポン！",org:"NHK for School",url:"https://edu.web.nhk/school/tokushi/dekoboko/",
+   desc:"発達が気になる子を楽しくサポートする特別支援教育番組。生活の場面や人との関わり方を動画でイメージでき、自立活動やSSTの導入に使いやすい。",
+   subj:["自立活動","特活","道徳"],grades:["low","mid","high"],tags:["SST","特別支援","動画","人との関わり"],acc:"学校では学校コードが必要",ok:true},
+  {id:"p22",cat:"video",name:"STEAMライブラリー",org:"経済産業省",url:"https://www.steam-library.go.jp/",
+   desc:"社会の課題と教科の学びをつなぐ動画・教材。総合的な学習の時間の探究に。",
+   subj:["総合","理科","社会","算数"],grades:["high","tch"],tags:["STEAM","探究","データ"],acc:"不要",ok:false},
+  {id:"p81",cat:"video",name:"教えて！はれるん（気象庁アニメ）",org:"気象庁",url:"https://www.jma.go.jp/jma/kishou/books/oshiete",
+   desc:"天気予報や警報・注意報の大切さを学べるアニメ（約17分）。大雨や津波から身を守るポイントも入っている。",
+   subj:["理科","社会","総合"],grades:["mid","high"],tags:["天気","防災","気象"],acc:"不要",ok:true},
+
+  /* ---------- プリント・ドリル ---------- */
+  {id:"p11",cat:"print",name:"ちびむすドリル",org:"パディンハウス",url:"https://happylilac.net/",
+   desc:"幼児〜中学生向けの学習プリントが無料。主な教科をカバーし、イラストが多く取り組みやすい。",
+   subj:["国語","算数","理科","社会","外国語"],grades:["low","mid","high"],tags:["プリント","漢字","計算","英単語"],acc:"不要（会員登録は任意）",ok:false},
+  {id:"p12",cat:"print",name:"ぷりんときっず",org:"ぷりんときっず",url:"https://print-kids.net/",
+   desc:"幼児・小学生（主に1〜3年生）向け。かわいいデザインで、印刷代を節約できる作り。",
+   subj:["国語","算数"],grades:["low","mid"],tags:["プリント","ひっ算","九九","ひらがな"],acc:"不要",ok:false},
+  {id:"p13",cat:"print",name:"すきるまドリル",org:"すきるまドリル",url:"https://sukiruma.net/",
+   desc:"運筆やカタカナなど、スモールステップのプリントが多い。入学準備や個別課題にも。",
+   subj:["国語","算数","自立活動"],grades:["low","mid","high"],tags:["プリント","運筆","カタカナ","個別課題"],acc:"不要",ok:false},
+  {id:"p82",cat:"print",name:"家勉キッズ",org:"家勉キッズ",url:"https://ieben.net/",
+   desc:"国語・算数・社会・理科・音楽の教材を学年別に整理。Web画面で学べる教材（漢字しらべ、マス計算など）と、印刷用プリント（計算ドリル、白地図、原稿用紙、五線紙など）がある。",
+   subj:["国語","算数","理科","社会","音楽"],grades:["low","mid","high"],tags:["プリント","白地図","五線紙","補充学習"],acc:"不要",ok:true},
+
+  /* ---------- Webアプリ・ツール ---------- */
+  {id:"p83",cat:"tool",name:"Chrome Music Lab",org:"Google",url:"https://musiclab.chromeexperiments.com/",
+   desc:"マス目をタップして曲を作る「Song Maker」や、リズム、和音、音の波を体験できる。登録不要で、タブレットでもすぐ使える。",
+   subj:["音楽","理科","図工"],grades:["low","mid","high"],tags:["作曲","リズム","音","創作"],acc:"不要",ok:true},
+  {id:"p84",cat:"tool",name:"PhET シミュレーション（日本語版）",org:"コロラド大学",url:"https://phet.colorado.edu/ja/",
+   desc:"電気・光・力・物の溶け方などを、画面上で条件を変えて実験できる無料シミュレーション。",
+   subj:["理科","算数"],grades:["mid","high","tch"],tags:["実験","電気","シミュレーション"],acc:"不要",ok:true},
+  {id:"p85",cat:"tool",name:"GeoGebra（ジオジェブラ）",org:"GeoGebra",url:"https://www.geogebra.org/",
+   desc:"図形やグラフを動かしながら考えられる無料の数学ソフト。図形の性質や比例・反比例の学習に。",
+   subj:["算数"],grades:["mid","high","tch"],tags:["図形","グラフ","作図"],acc:"不要（保存は登録）",ok:false},
+  {id:"p86",cat:"tool",name:"エデアル",org:"エデアル",url:"https://edeal-soft.com/",
+   desc:"知育ゲームや学習支援アプリを無料で公開。算数・国語・英語の教材、脳トレ、百ます計算や穴埋め問題を作るツールもある。ダウンロード不要。",
+   subj:["算数","国語","外国語","自立活動"],grades:["low","mid","high","tch"],tags:["ゲーム","百ます計算","ウォームアップ","教材作成"],acc:"不要",ok:true},
+  {id:"p87",cat:"tool",name:"Jimitas（ジミタス）",org:"Jimitas",url:"https://jimitas.com/",
+   desc:"「地味に助かる学習コンテンツ」をうたうWebアプリ集。お金の学習、九九、ローマ字など、低学年向けの算数・国語教材をタブレットで操作できる（ご提供いただいた情報）。",
+   subj:["算数","国語"],grades:["low","mid"],tags:["お金","九九","ローマ字","タブレット"],acc:"不要",ok:false},
+  {id:"p41",cat:"tool",name:"Viscuit（ビスケット）",org:"デジタルポケット",url:"https://www.viscuit.com/",
+   desc:"文字を使わず、かいた絵を「めがね」で動かすプログラミング。低学年・特別支援学級でも使いやすい。",
+   subj:["情報","図工","算数"],grades:["low","mid"],tags:["プログラミング","絵"],acc:"不要",ok:true},
+  {id:"p42",cat:"tool",name:"Scratch（スクラッチ）",org:"MIT／Scratch財団",url:"https://scratch.mit.edu/",
+   desc:"ブロックを組み合わせてゲームやアニメを作るプログラミング。作品の保存にはアカウントが必要。",
+   subj:["情報","算数","総合"],grades:["mid","high"],tags:["プログラミング","ゲームづくり"],acc:"作品を保存するときは必要",ok:false},
+  {id:"p43",cat:"tool",name:"キーボー島アドベンチャー",org:"キーボード検定サイト",url:"https://kb-kentei.net/",
+   desc:"級に挑戦しながらキーボード入力を練習できる、小学生向けの検定サイト。",
+   subj:["情報","国語"],grades:["low","mid","high"],tags:["タイピング","ローマ字","検定"],acc:"先生が学校で登録",ok:true},
+  {id:"p44",cat:"tool",name:"Hour of Code",org:"Code.org",url:"https://hourofcode.com/jp",
+   desc:"1時間で体験できるプログラミング教材がたくさんある。",
+   subj:["情報","総合"],grades:["mid","high"],tags:["プログラミング","体験"],acc:"不要",ok:false},
+
+  /* ---------- 調べ学習・資料・地図 ---------- */
+  {id:"p31",cat:"research",name:"なるほど統計学園",org:"総務省統計局",url:"https://www.stat.go.jp/naruhodo/",
+   desc:"データの探し方やグラフの作り方など、統計の基礎を楽しく学べる。自由研究のヒントも。",
+   subj:["算数","社会","総合"],grades:["mid","high"],tags:["統計","グラフ","自由研究"],acc:"不要",ok:true},
+  {id:"p32",cat:"research",name:"統計ダッシュボード",org:"総務省統計局",url:"https://dashboard.e-stat.go.jp/",
+   desc:"人口や経済などの主な統計データをグラフで見られる。社会科の資料づくりに。",
+   subj:["社会","算数","総合"],grades:["high","tch"],tags:["統計","グラフ"],acc:"不要",ok:true},
+  {id:"p33",cat:"research",name:"地理院地図",org:"国土地理院",url:"https://maps.gsi.go.jp/",
+   desc:"地形図・写真・標高・災害情報が見られるWeb地図。学区の地図づくりや防災学習に。",
+   subj:["社会","理科","総合"],grades:["mid","high","tch"],tags:["地図","防災","地形"],acc:"不要",ok:false},
+  {id:"p88",cat:"research",name:"ハザードマップポータルサイト",org:"国土交通省・国土地理院",url:"https://disaportal.gsi.go.jp/",
+   desc:"「重ねるハザードマップ」で、浸水・土砂災害・地形などの災害リスクを地図に重ねて確認できる。市町村のハザードマップも探せる。",
+   subj:["社会","理科","総合"],grades:["mid","high","tch"],tags:["防災","地図","ハザードマップ"],acc:"不要",ok:true},
+  {id:"p89",cat:"research",name:"マイ・タイムライン検討ツール「逃げキッド」",org:"国土交通省",url:"https://www.mlit.go.jp/river/bousai/main/saigai/tisiki/syozaiti/mytimeline/index.html",
+   desc:"小中学生でも短時間で、大雨のときに「いつ・何をするか」の避難計画を考えられる。「気をつけ妖怪カード」もある。",
+   subj:["社会","総合","特活"],grades:["mid","high"],tags:["防災","避難","水害"],acc:"不要",ok:true},
+  {id:"p90",cat:"research",name:"宇宙教育教材",org:"JAXA宇宙教育センター",url:"https://edu.jaxa.jp/materialDB/",
+   desc:"宇宙を題材にした教材を、学年・教科・分野で探せる。理科だけでなく国語・算数・道徳などの教材もある。",
+   subj:["理科","算数","国語","道徳","総合"],grades:["low","mid","high","tch"],tags:["宇宙","天体","実験"],acc:"不要",ok:true},
+  {id:"p91",cat:"research",name:"青空文庫",org:"青空文庫",url:"https://www.aozora.gr.jp/",
+   desc:"著作権が切れた作品などを無料で読めるインターネットの図書館。教科書に出てくる作家の作品も多い。",
+   subj:["国語","道徳"],grades:["mid","high","tch"],tags:["読書","物語","作家"],acc:"不要",ok:true},
+  {id:"p34",cat:"research",name:"国際子ども図書館",org:"国立国会図書館",url:"https://www.kodomo.go.jp/",
+   desc:"子どもの本の情報や、調べもののための案内がある。読書・調べ学習に。",
+   subj:["国語","総合"],grades:["mid","high","tch"],tags:["本","読書","調べ学習"],acc:"不要",ok:false},
+  {id:"p92",cat:"research",name:"こどもページ（農林水産省）",org:"農林水産省",url:"https://www.maff.go.jp/j/kids/",
+   desc:"食べ物・農業・森林・食品安全などについて、子ども向けに学べるページとリンク集。",
+   subj:["社会","家庭","総合"],grades:["mid","high"],tags:["食育","農業","食べ物"],acc:"不要",ok:true},
+  {id:"p93",cat:"research",name:"SDGsポータル（日本ユニセフ協会）",org:"日本ユニセフ協会",url:"https://www.unicef.or.jp/kodomo/sdgs/",
+   desc:"SDGsについて子ども向けに学べるサイト。総合的な学習の時間の導入に。",
+   subj:["総合","社会","道徳"],grades:["mid","high"],tags:["SDGs","国際理解"],acc:"不要",ok:false},
+  {id:"p94",cat:"research",name:"おうちでチャレンジ！図工の時間",org:"日本文教出版",url:"https://www.nichibun-g.co.jp/learning_support/zuko/",
+   desc:"家にある材料でできる工作などを紹介。図工の家庭学習やアイデア集めに。",
+   subj:["図工"],grades:["low","mid","high"],tags:["工作","家庭学習"],acc:"不要",ok:false},
+  {id:"p95",cat:"research",name:"Let's Try!・We Can! 音声データ",org:"文部科学省",url:"https://www.mext.go.jp/a_menu/kokusai/gaikokugo/1387503_00001.htm",
+   desc:"文部科学省の外国語教材の音声データ。チャンツや表現の聞き取り練習に。",
+   subj:["外国語"],grades:["mid","high"],tags:["英語","音声","チャンツ"],acc:"不要",ok:false},
+
+  /* ---------- 情報モラル ---------- */
+  {id:"p01",cat:"moral",name:"情報モラル教育ポータルサイト",org:"文部科学省",url:"https://www.mext.go.jp/zyoukatsu/moral/index.html",
+   desc:"子ども・先生・保護者向けの情報モラル動画や啓発資料をまとめたサイト。生成AIやディープフェイクなど新しいテーマもある。",
+   subj:["情報","道徳","特活"],grades:["low","mid","high","tch"],tags:["情報モラル","動画","指導案","生成AI"],acc:"不要",ok:true},
+  {id:"p02",cat:"moral",name:"情報モラルe-learningコンテンツ",org:"文部科学省",url:"https://www.mext.go.jp/moral/",
+   desc:"スマホ・タブレットの使う場面ごとに問題に答えながら学べる。推奨学年つきで、家庭学習にも使える。",
+   subj:["情報","道徳"],grades:["low","mid","high"],tags:["情報モラル","クイズ","家庭学習"],acc:"不要",ok:true},
+  {id:"p03",cat:"moral",name:"上手にネットと付き合おう！",org:"総務省",url:"https://www.soumu.go.jp/use_the_internet_wisely/",
+   desc:"安心・安全なインターネット利用ガイド。青少年向け、保護者・教職員向けのページに分かれている。",
+   subj:["情報","道徳","特活"],grades:["high","tch"],tags:["ネットトラブル","保護者"],acc:"不要",ok:true},
+  {id:"p04",cat:"moral",name:"インターネットトラブル事例集",org:"総務省",url:"https://www.soumu.go.jp/main_sosiki/joho_tsusin/kyouiku_joho-ka/jireishu.html",
+   desc:"実際に起きたトラブル事例と予防法。授業で使える教職員用の参考資料もダウンロードできる。",
+   subj:["情報","道徳","特活"],grades:["tch"],tags:["事例","授業資料"],acc:"不要",ok:true},
+  {id:"p05",cat:"moral",name:"Be Internet Awesome（インターランド）",org:"Google",url:"https://beinternetawesome.withgoogle.com/ja_jp",
+   desc:"ゲーム「インターランド」で、パスワードや個人情報の守り方、思いやりのある使い方を楽しく学べる。",
+   subj:["情報","道徳"],grades:["mid","high"],tags:["ゲーム","パスワード"],acc:"不要",ok:false},
+
+  /* ---------- 特別支援・自立活動・SST ---------- */
+  {id:"s01",cat:"sped",name:"やんちゃワーク",org:"公認心理師すぅさん ほか",url:"https://yanchawork.com/",
+   desc:"無料の学習プリントを「空間認知・ことば・数」など育てたい力や課題の種類から選べる。注意・集中、コミュニケーションなど認知や社会性を育てるプリントが多い。",
+   subj:["自立活動","国語","算数"],grades:["low","mid","high"],tags:["認知","空間認知","注意・集中","SST"],acc:"不要",ok:true},
+  {id:"s02",cat:"sped",name:"そえぎぷりんと",org:"そえぎぷりんと",url:"https://soegiprint.com/",
+   desc:"特別支援を必要とする子ども向けの無料教材サイト。算数・国語・視覚支援・自立活動・ゲーム・季節の制作などに分かれている。",
+   subj:["自立活動","算数","国語","図工","生活"],grades:["low","mid","high"],tags:["視覚支援","シール貼り","買い物","季節の制作"],acc:"不要",ok:true},
+  {id:"s03",cat:"sped",name:"ぐんぐんワーク",org:"ぐんぐんワーク",url:"https://gungunstudy.com/",
+   desc:"発達障がい・知的障がいのある子ども向けを中心とした印刷用教材。絵とことばのマッチング、気持ちの学習、ひらがな、迷路、ぬりえ、お金のワークなど。",
+   subj:["自立活動","国語","算数","図工"],grades:["low","mid","high"],tags:["マッチング","気持ち","お金","ぬりえ"],acc:"不要",ok:true},
+  {id:"s04",cat:"sped",name:"ゆた先生の特別支援ブログ",org:"ゆた先生（特別支援学級担任経験8年）",url:"https://specialeducationjourney.com/",
+   desc:"SST・感情理解・自己理解・振り返りなど、目的別に教材を探せる。「わたしのトリセツ」ワークシートなど無料ダウンロード教材もある。",
+   subj:["自立活動","特活","道徳"],grades:["low","mid","high","tch"],tags:["SST","感情理解","自己理解","実践"],acc:"不要",ok:true},
+  {id:"s05",cat:"sped",name:"特別支援教育わくわく教材",org:"ミンハイ先生（公認心理師）",url:"https://kyozaisupport.com/",
+   desc:"プリント、タブレット教材、カード・掲示用教材などを、ワーキングメモリーやビジョントレーニング、ソーシャルスキルなどの観点で探せる。学年別タグもある。",
+   subj:["自立活動","国語","算数"],grades:["low","mid","high","tch"],tags:["ワーキングメモリー","ビジョントレーニング","SST","手作り教具"],acc:"不要",ok:true},
+  {id:"s06",cat:"sped",name:"特別支援教材開発研究所（TKK）",org:"TKK",url:"https://tkk-fk.com/",
+   desc:"だれでも無料で使える教材・Webアプリ。怒りの強さを数字で表す「温怒計」、残り時間が見えるタイマー、声量チェッカー、九九のフラッシュカード、お金の買い物練習など。",
+   subj:["自立活動","算数","特活"],grades:["low","mid","high","tch"],tags:["アンガーマネジメント","タイマー","声の大きさ","お金"],acc:"不要",ok:true},
+  {id:"s07",cat:"sped",name:"Teach U（ティーチ ユー）",org:"後藤匡敬 先生・熊本大学",url:"https://teachu.educ.kumamoto-u.ac.jp/",
+   desc:"特別支援教育のデジタル教材サイト。プレゼン教材500件以上、Webアプリなど。学校教育なら自由に使え、改変もできる（CC BY-NC-SA 4.0）。",
+   subj:["自立活動","算数","国語","生活"],grades:["low","mid","high","tch"],tags:["PowerPoint","視覚支援","Webアプリ"],acc:"不要",ok:true},
+  {id:"s08",cat:"sped",name:"ダッシュニンの特別支援教材室",org:"特別支援学校教員",url:"https://dashnin-kyouzaiko.com/",
+   desc:"特別支援学級・学校で使える教科別の無料教材、研修・講義資料、アプリや書籍の紹介。タブレット活用の手がかりに。",
+   subj:["自立活動","国語","算数"],grades:["tch"],tags:["iPad","研修資料","教材"],acc:"不要",ok:true},
+
+  /* ---------- 先生のための資料 ---------- */
+  {id:"p51",cat:"teacher",name:"StuDX Style",org:"文部科学省",url:"https://www.mext.go.jp/studxstyle/",
+   desc:"1人1台端末の活用事例集。「慣れる」「つながる」活用から各教科まで探せる。",
+   subj:["情報","国語","算数","理科","社会","総合"],grades:["tch"],tags:["GIGA","ICT","活用事例"],acc:"不要",ok:true},
+  {id:"p52",cat:"teacher",name:"リーディングDXスクール",org:"文部科学省",url:"https://leadingdxschool.mext.go.jp/",
+   desc:"指定校の実践事例や動画。情報活用能力の育成や生成AIの活用例もある。",
+   subj:["情報","総合"],grades:["tch"],tags:["ICT","実践事例","生成AI"],acc:"不要",ok:true},
+  {id:"p53",cat:"teacher",name:"統計学習の指導のために（先生向け）",org:"総務省統計局",url:"https://www.stat.go.jp/teacher/",
+   desc:"統計調査の結果を使った授業モデルや補助教材。算数「データの活用」に。",
+   subj:["算数","社会"],grades:["tch"],tags:["統計","授業モデル"],acc:"不要",ok:true},
+  {id:"p54",cat:"teacher",name:"子供の学び応援サイト",org:"文部科学省",url:"https://www.mext.go.jp/a_menu/ikusei/gakusyushien/index_00001.htm",
+   desc:"家庭や学校で使える学習支援コンテンツを教科ごとにまとめたポータル。",
+   subj:["国語","算数","理科","社会","外国語","音楽","図工","家庭","体育"],grades:["low","mid","high","tch"],tags:["ポータル","家庭学習"],acc:"不要",ok:false}
+];
+
+/* ===== 保存 ===== */
+const KEY = "jugyo-site-navi-v1";
+let state = {custom:[], fav:[], hidden:[], edits:{}, shots:{}, autoShot:true};
+function load(){
+  try{ const s = JSON.parse(localStorage.getItem(KEY)||"null"); if(s && typeof s==="object") state = Object.assign(state, s); }catch(e){}
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(state)); return true; }
+  catch(e){ toast("この端末の保存容量がいっぱいです。写真をいくつか外してください"); return false; }
+}
+if(!state.shots || typeof state.shots!=="object") state.shots={};
+if(typeof state.autoShot!=="boolean") state.autoShot=true;
+
+/* ===== サイトの画面（サムネイル） ===== */
+function hostOf(u){ try{ return new URL(u).hostname.replace(/^www\./,""); }catch(e){ return ""; } }
+function autoShotUrl(u, w){ return "https://s.wordpress.com/mshots/v1/" + encodeURIComponent(u) + "?w=" + (w||400); }
+function placeholder(s){
+  return `<span class="ph" style="background:${catOf(s.cat).color}"><b>${esc((s.name||"?").replace(/^[「（(]/,"").charAt(0))}</b><small>${esc(hostOf(s.url))}</small></span>`;
+}
+function shotSrc(s, w){
+  if(state.shots[s.id]) return {src:state.shots[s.id], own:true};
+  const u=safeUrl(s.url);
+  if(state.autoShot && u) return {src:autoShotUrl(u,w), own:false};
+  return null;
+}
+function thumbHtml(s, cls){
+  const sh=shotSrc(s,400);
+  const img = sh ? `<img src="${esc(sh.src)}" alt="${esc(s.name)}のトップ画面" loading="lazy">` : "";
+  return `<button type="button" class="${cls||"thumb"}" data-shot="${esc(s.id)}" aria-label="${esc(s.name)}の画面を大きく見る">${placeholder(s)}${img}${sh&&sh.own?'<span class="mark">登録した画面</span>':""}</button>`;
+}
+load();
+
+/* ===== 画面の状態 ===== */
+const ui = {q:"", subjs:new Set(), cats:new Set(), grades:new Set(), favOnly:false, noAcc:false, showHidden:false};
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const catOf = id => CATS.find(c=>c.id===id) || CATS[CATS.length-1];
+function allSites(){
+  const pre = PRESET.map(p => state.edits[p.id] ? Object.assign({},p,state.edits[p.id]) : p);
+  return pre.concat(state.custom.map(c=>Object.assign({cat:"mine",org:"自分で追加",acc:"",ok:true,mine:true,subj:[]},c)));
+}
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),2200); }
+function safeUrl(u){
+  try{ const x = new URL(u); return (x.protocol==="https:"||x.protocol==="http:") ? x.href : null; }catch(e){ return null; }
+}
+
+/* ===== フィルター部品 ===== */
+function makeChips(){
+  const sr = $("#subjRow");
+  SUBJECTS.forEach(sj=>{
+    const b=document.createElement("button"); b.className="chip"; b.textContent=sj; b.setAttribute("aria-pressed","false");
+    b.onclick=()=>{ ui.subjs.has(sj)?ui.subjs.delete(sj):ui.subjs.add(sj); b.setAttribute("aria-pressed",ui.subjs.has(sj)); render(); };
+    sr.appendChild(b);
+  });
+  const cr = $("#catRow");
+  CATS.forEach(c=>{
+    const b=document.createElement("button"); b.className="chip"; b.textContent=c.name; b.setAttribute("aria-pressed","false");
+    b.onclick=()=>{ ui.cats.has(c.id)?ui.cats.delete(c.id):ui.cats.add(c.id); b.setAttribute("aria-pressed",ui.cats.has(c.id)); render(); };
+    cr.appendChild(b);
+  });
+  const gr = $("#gradeRow");
+  GRADES.forEach(g=>{
+    const b=document.createElement("button"); b.className="chip"; b.textContent=g.name; b.setAttribute("aria-pressed","false");
+    b.onclick=()=>{ ui.grades.has(g.id)?ui.grades.delete(g.id):ui.grades.add(g.id); b.setAttribute("aria-pressed",ui.grades.has(g.id)); render(); };
+    gr.appendChild(b);
+  });
+  [["#favOnly","favOnly"],["#noAcc","noAcc"],["#showHidden","showHidden"]].forEach(([sel,k])=>{
+    const b=$(sel); b.onclick=()=>{ ui[k]=!ui[k]; b.setAttribute("aria-pressed",ui[k]); render(); };
+  });
+  $("#q").addEventListener("input",e=>{ ui.q=e.target.value.trim(); render(); });
+}
+
+function matches(s){
+  if(!ui.showHidden && state.hidden.includes(s.id)) return false;
+  if(ui.favOnly && !state.fav.includes(s.id)) return false;
+  if(ui.noAcc && s.acc && !s.acc.startsWith("不要")) return false;
+  if(ui.subjs.size && !(s.subj||[]).some(x=>ui.subjs.has(x))) return false;
+  if(ui.cats.size && !ui.cats.has(s.cat)) return false;
+  if(ui.grades.size && !(s.grades||[]).some(g=>ui.grades.has(g))) return false;
+  if(ui.q){
+    const hay = [s.name,s.org,s.desc,s.hint,(s.tags||[]).join(" "),(s.subj||[]).join(" "),catOf(s.cat).name].join(" ").toLowerCase();
+    const words = ui.q.toLowerCase().split(/[\s、,　]+/).filter(Boolean);
+    if(!words.every(w=>hay.includes(w))) return false;
+  }
+  return true;
+}
+
+/* ===== 一覧表示 ===== */
+function cardHtml(s){
+  const fav = state.fav.includes(s.id), hid = state.hidden.includes(s.id);
+  const gtags = (s.grades||[]).map(g=>`<span class="tag">${esc((GRADES.find(x=>x.id===g)||{}).name||"")}</span>`).join("");
+  const kw = (s.subj||[]).map(t=>`<span class="tag subj">${esc(t)}</span>`).join("") + (s.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join("");
+  const accTag = s.acc ? `<span class="tag acc">登録：${esc(s.acc)}</span>` : "";
+  const warn = s.ok===false ? `<span class="tag warn" title="リンク先が変わっている可能性があります">URL要確認</span>` : "";
+  const mine = s.mine ? `<span class="tag mine">自分で追加</span>` : "";
+  const url = safeUrl(s.url);
+  return `<article class="card" style="border-top:5px solid ${catOf(s.cat).color}${hid?";opacity:.55":""}">
+    <button class="star" data-fav="${esc(s.id)}" aria-pressed="${fav}" aria-label="${esc(s.name)}をお気に入り${fav?"から外す":"にする"}">★</button>
+    <div class="head">${thumbHtml(s)}<div class="head-text">
+      <h3>${esc(s.name)}</h3>
+      <div class="org">${esc(s.org||"")}</div></div></div>
+    <div class="tags">${mine}${warn}${gtags}${accTag}</div>
+    ${s.desc?`<p class="desc">${esc(s.desc)}</p>`:""}
+    ${s.hint?`<div class="hint">💡 ${esc(s.hint)}</div>`:""}
+    ${kw?`<div class="tags">${kw}</div>`:""}
+    <div class="url-print">${esc(s.url)}</div>
+    <div class="actions">
+      ${url?`<a class="btn primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">ひらく ↗</a>`:`<span class="tag warn">URLが正しくありません</span>`}
+      <button class="btn" data-qr="${esc(s.id)}">QRコード</button>
+      <button class="btn ghost" data-edit="${esc(s.id)}">${s.mine?"編集・画面":"メモ・画面を登録"}</button>
+      ${s.mine?"":`<button class="btn ghost" data-hide="${esc(s.id)}">${hid?"表示する":"かくす"}</button>`}
+    </div>
+  </article>`;
+}
+
+function render(){
+  const sites = allSites().filter(matches);
+  $("#count").textContent = `${sites.length}件のサイト`;
+  const list = $("#list");
+  if(!sites.length){
+    list.innerHTML = `<div class="empty">条件に合うサイトがありません。<br>しぼりこみを外すか、「＋ サイトを追加」で登録してください。</div>`;
+    return;
+  }
+  let html = "";
+  CATS.forEach(c=>{
+    const g = sites.filter(s=>s.cat===c.id);
+    if(!g.length) return;
+    html += `<h2 class="section-title"><span class="dot" style="background:${c.color}"></span>${esc(c.name)}（${g.length}）</h2><div class="grid">${g.map(cardHtml).join("")}</div>`;
+  });
+  list.innerHTML = html;
+}
+
+/* ===== クリック操作 ===== */
+document.addEventListener("click",e=>{
+  const t = e.target.closest("[data-fav],[data-qr],[data-edit],[data-hide],[data-close],[data-shot]");
+  if(!t) return;
+  if(t.dataset.fav){
+    const id=t.dataset.fav, i=state.fav.indexOf(id);
+    i<0 ? state.fav.push(id) : state.fav.splice(i,1); save(); render();
+    toast(i<0?"お気に入りにしました":"お気に入りから外しました");
+  } else if(t.dataset.qr){ openQr(allSites().find(s=>s.id===t.dataset.qr)); }
+  else if(t.dataset.edit){ openEdit(t.dataset.edit); }
+  else if(t.dataset.shot){ openShot(allSites().find(s=>s.id===t.dataset.shot)); }
+  else if(t.dataset.hide){
+    const id=t.dataset.hide, i=state.hidden.indexOf(id);
+    i<0 ? state.hidden.push(id) : state.hidden.splice(i,1); save(); render();
+    toast(i<0?"かくしました（「かくしたサイトも表示」で戻せます）":"表示にもどしました");
+  } else if(t.hasAttribute("data-close")){ t.closest(".overlay").classList.remove("open"); }
+});
+document.querySelectorAll(".overlay").forEach(o=>o.addEventListener("click",e=>{ if(e.target===o) o.classList.remove("open"); }));
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Escape") return;
+  document.querySelectorAll(".overlay.open").forEach(o=>o.classList.remove("open"));
+  $("#kids").classList.remove("open");
+  $("#sheet").classList.remove("open");
+});
+
+/* ===== QRコード ===== */
+function drawQr(el,url,size){
+  el.innerHTML="";
+  if(typeof QRCode==="undefined"){ el.innerHTML=`<p class="qrurl">QRコードを作れませんでした（通信を確認してください）。</p>`; return; }
+  try{ new QRCode(el,{text:url,width:size,height:size,correctLevel:QRCode.CorrectLevel.M}); }
+  catch(err){ el.innerHTML=`<p class="qrurl">QRコードを作れませんでした。</p>`; }
+}
+let qrCurrent="";
+function openQr(s){
+  if(!s) return; const url=safeUrl(s.url); if(!url){ toast("URLが正しくありません"); return; }
+  qrCurrent=url; $("#qrTitle").textContent=s.name; $("#qrUrl").textContent=url;
+  drawQr($("#qrBox"),url,240); $("#qrOv").classList.add("open");
+}
+$("#copyUrl").onclick=()=>copyText(qrCurrent,"URLをコピーしました");
+function copyText(txt,msg){
+  try{
+    navigator.clipboard.writeText(txt).then(()=>toast(msg),()=>fallbackCopy(txt,msg));
+  }catch(e){ fallbackCopy(txt,msg); }
+}
+function fallbackCopy(txt,msg){
+  const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select();
+  let ok=false; try{ ok=document.execCommand("copy"); }catch(e){}
+  ta.remove(); toast(ok?msg:"コピーできませんでした。手で選んでコピーしてください");
+}
+
+/* ===== 追加・編集 ===== */
+let editingId=null;
+(function buildForm(){
+  $("#fCat").innerHTML = CATS.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join("");
+  $("#fGrades").innerHTML = GRADES.map(g=>`<button type="button" class="chip" data-g="${g.id}" aria-pressed="false">${esc(g.name)}</button>`).join("");
+  $("#fGrades").addEventListener("click",e=>{ const b=e.target.closest("[data-g]"); if(b) b.setAttribute("aria-pressed", b.getAttribute("aria-pressed")!=="true"); });
+  $("#fSubj").innerHTML = SUBJECTS.map(s=>`<button type="button" class="chip" data-sj="${esc(s)}" aria-pressed="false">${esc(s)}</button>`).join("");
+  $("#fSubj").addEventListener("click",e=>{ const b=e.target.closest("[data-sj]"); if(b) b.setAttribute("aria-pressed", b.getAttribute("aria-pressed")!=="true"); });
+})();
+function openEdit(id){
+  editingId=id||null; $("#fErr").textContent="";
+  const s = id ? allSites().find(x=>x.id===id) : null;
+  const isPreset = s && !s.mine;
+  $("#editTitle").textContent = !s ? "サイトを追加" : (isPreset ? "メモを編集" : "サイトを編集");
+  $("#fName").value = s?s.name:""; $("#fUrl").value = s?s.url:"";
+  $("#fCat").value = s?s.cat:"mine"; $("#fDesc").value = s?(s.desc||""):""; $("#fTags").value = s?(s.tags||[]).join("、"):"";
+  [$("#fName"),$("#fUrl"),$("#fCat")].forEach(el=>el.disabled=!!isPreset);
+  document.querySelectorAll("#fGrades [data-g]").forEach(b=>b.setAttribute("aria-pressed", s?(s.grades||[]).includes(b.dataset.g):"false"));
+  document.querySelectorAll("#fSubj [data-sj]").forEach(b=>b.setAttribute("aria-pressed", s?(s.subj||[]).includes(b.dataset.sj):"false"));
+  $("#delBtn").style.display = (s && s.mine) ? "inline-flex" : (isPreset && state.edits[id] ? "inline-flex" : "none");
+  $("#delBtn").textContent = isPreset ? "メモを元にもどす" : "削除";
+  pendingShot = s && state.shots[s.id] ? state.shots[s.id] : null; showShotPrev();
+  $("#fShot").value="";
+  $("#editOv").classList.add("open"); setTimeout(()=>(isPreset?$("#fDesc"):$("#fName")).focus(),50);
+}
+$("#addBtn").onclick=()=>openEdit(null);
+$("#editForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const grades=[...document.querySelectorAll("#fGrades [data-g]")].filter(b=>b.getAttribute("aria-pressed")==="true").map(b=>b.dataset.g);
+  const tags=$("#fTags").value.split(/[、,，\s]+/).map(t=>t.trim()).filter(Boolean).slice(0,8);
+  const desc=$("#fDesc").value.trim();
+  const subj=[...document.querySelectorAll("#fSubj [data-sj]")].filter(b=>b.getAttribute("aria-pressed")==="true").map(b=>b.dataset.sj);
+  const isPreset = editingId && PRESET.some(p=>p.id===editingId);
+  if(isPreset){
+    state.edits[editingId]={desc,tags,grades,subj};
+    if(pendingShot) state.shots[editingId]=pendingShot; else delete state.shots[editingId]; save(); render(); $("#editOv").classList.remove("open"); toast("メモを保存しました"); return;
+  }
+  const name=$("#fName").value.trim(); let url=$("#fUrl").value.trim();
+  if(url && !/^https?:\/\//i.test(url)) url="https://"+url;
+  if(!name){ $("#fErr").textContent="サイト名を入れてください。"; return; }
+  if(!safeUrl(url)){ $("#fErr").textContent="URLは https:// から始まる形で入れてください。"; return; }
+  const item={id: editingId || ("c"+Date.now().toString(36)), name, url:safeUrl(url), cat:$("#fCat").value, desc, tags, grades, subj};
+  if(pendingShot) state.shots[item.id]=pendingShot; else delete state.shots[item.id];
+  const i=state.custom.findIndex(c=>c.id===item.id);
+  i<0 ? state.custom.push(item) : (state.custom[i]=item);
+  save(); render(); $("#editOv").classList.remove("open"); toast(i<0?"サイトを追加しました":"保存しました");
+});
+$("#delBtn").onclick=()=>{
+  const id=editingId; const isPreset = PRESET.some(p=>p.id===id);
+  confirmBox(isPreset?"このサイトのメモを最初の内容にもどしますか？":"このサイトを削除しますか？",()=>{
+    if(isPreset){ delete state.edits[id]; }
+    else { state.custom=state.custom.filter(c=>c.id!==id); state.fav=state.fav.filter(f=>f!==id); delete state.shots[id]; }
+    save(); render(); $("#editOv").classList.remove("open"); toast(isPreset?"もとにもどしました":"削除しました");
+  });
+};
+function confirmBox(msg,ok){
+  $("#cfMsg").textContent=msg; $("#cfOv").classList.add("open");
+  $("#cfOk").onclick=()=>{ $("#cfOv").classList.remove("open"); ok(); };
+}
+
+/* ===== 子ども画面 ===== */
+$("#kidsBtn").onclick=()=>{
+  const favs = allSites().filter(s=>state.fav.includes(s.id));
+  const g=$("#kgrid");
+  if(!favs.length){ toast("先に、見せたいサイトの★を押してください"); return; }
+  g.innerHTML = favs.map((s,i)=>{
+    const url=safeUrl(s.url);
+    return `<div class="kcard" style="border-color:${catOf(s.cat).color}"><div class="kthumb">${placeholder(s)}${(()=>{const sh=shotSrc(s,600);return sh?`<img src="${esc(sh.src)}" alt="">`:"";})()}</div><div class="kname">${esc(s.name)}</div>
+      <div class="kqr" id="kq${i}"></div>
+      ${url?`<a class="btn primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">ひらく</a>`:""}</div>`;
+  }).join("");
+  favs.forEach((s,i)=>{ const u=safeUrl(s.url); if(u) drawQr(document.getElementById("kq"+i),u,140); });
+  $("#kids").classList.add("open"); $("#kidsClose").focus();
+};
+$("#kidsClose").onclick=()=>$("#kids").classList.remove("open");
+
+/* ===== QRつき配布プリント ===== */
+function renderSheet(){
+  const favs = allSites().filter(s=>state.fav.includes(s.id) && safeUrl(s.url));
+  const size = +$("#sheetSize").value, showDesc = $("#sheetDesc").checked;
+  const g=$("#paperGrid");
+  g.style.gridTemplateColumns = size>=160 ? "1fr" : "1fr 1fr";
+  g.innerHTML = favs.map((s,i)=>`<div class="pitem"><div class="pq" id="pq${i}"></div><div>
+      <div class="pname">${esc(s.name)}</div>
+      ${showDesc&&s.desc?`<div class="pdesc">${esc(s.desc)}</div>`:""}
+      <div class="purl">${esc(safeUrl(s.url))}</div></div></div>`).join("");
+  favs.forEach((s,i)=>drawQr(document.getElementById("pq"+i),safeUrl(s.url),size));
+}
+$("#sheetBtn").onclick=()=>{
+  if(!state.fav.length){ toast("先に、のせたいサイトの★を押してください"); return; }
+  renderSheet(); $("#sheet").classList.add("open"); $("#sheetClose").focus();
+};
+$("#sheetSize").onchange=renderSheet; $("#sheetDesc").onchange=renderSheet;
+$("#sheetClose").onclick=()=>$("#sheet").classList.remove("open");
+$("#sheetPrint").onclick=()=>{
+  document.body.classList.add("printing-sheet");
+  try{ window.print(); }catch(e){ toast("この画面では印刷できません。ブラウザで直接ひらいて印刷してください"); }
+  setTimeout(()=>document.body.classList.remove("printing-sheet"),500);
+};
+
+/* ===== データ ===== */
+$("#dataBtn").onclick=()=>{ $("#impErr").textContent=""; $("#importTxt").value=""; $("#dataOv").classList.add("open"); };
+$("#exportBtn").onclick=()=>copyText(JSON.stringify({app:"jugyo-site-navi",v:1,data:state}),"データをコピーしました。メモ帳などに貼りつけて保管できます");
+$("#importBtn").onclick=()=>{
+  try{
+    const o=JSON.parse($("#importTxt").value);
+    const d=o && o.data; if(!d || !Array.isArray(d.custom) || !Array.isArray(d.fav)) throw 0;
+    const clean = {
+      custom: d.custom.filter(c=>c && c.id && c.name && safeUrl(c.url)).map(c=>({id:String(c.id),name:String(c.name).slice(0,60),url:safeUrl(c.url),
+        cat:CATS.some(x=>x.id===c.cat)?c.cat:"mine",desc:String(c.desc||"").slice(0,200),tags:Array.isArray(c.tags)?c.tags.map(String).slice(0,8):[],
+        grades:Array.isArray(c.grades)?c.grades.filter(g=>GRADES.some(x=>x.id===g)):[],
+        subj:Array.isArray(c.subj)?c.subj.filter(x=>SUBJECTS.includes(x)):[]})),
+      fav: d.fav.map(String), hidden: Array.isArray(d.hidden)?d.hidden.map(String):[], edits: (d.edits&&typeof d.edits==="object")?d.edits:{},
+      shots: Object.fromEntries(Object.entries((d.shots&&typeof d.shots==="object")?d.shots:{}).filter(([k,v])=>typeof v==="string"&&/^data:image\/(jpeg|png|webp);base64,/.test(v)&&v.length<400000)),
+      autoShot: d.autoShot!==false
+    };
+    state=clean; save(); render(); $("#dataOv").classList.remove("open"); toast(`読みこみました（追加サイト${clean.custom.length}件）`);
+  }catch(e){ $("#impErr").textContent="読みこめませんでした。「データをコピー」で作った文字をそのまま貼りつけてください。"; }
+};
+$("#resetBtn").onclick=()=>confirmBox("追加したサイト・お気に入り・メモをすべて消して、はじめの状態にもどしますか？",()=>{
+  state={custom:[],fav:[],hidden:[],edits:{},shots:{},autoShot:true}; save(); $("#autoShot").setAttribute("aria-pressed","true"); render(); $("#dataOv").classList.remove("open"); toast("はじめの状態にもどしました");
+});
+
+/* ===== 画面の写真：大きく見る・登録 ===== */
+document.addEventListener("error",e=>{ const t=e.target; if(t && t.tagName==="IMG" && t.closest(".thumb,.kthumb")) t.remove(); },true);
+function openShot(s){
+  if(!s) return;
+  const sh=shotSrc(s,1000), u=safeUrl(s.url);
+  $("#shotTitle").textContent=s.name;
+  const img=$("#bigShot"); img.style.display=sh?"block":"none"; img.alt=s.name+"のトップ画面";
+  $("#shotNote").textContent = sh ? (sh.own?"登録した画面です。":"自動で取得した画面です。いまのサイトと少しちがうことがあります。") : "画面の写真がありません。「メモ・画面を登録」からスクショを入れられます。";
+  img.onerror=()=>{ img.style.display="none"; $("#shotNote").textContent="画面を読みこめませんでした。「メモ・画面を登録」からスクショを入れられます。"; };
+  if(sh) img.src=sh.src;
+  const a=$("#shotOpen"); if(u){ a.href=u; a.style.display="inline-flex"; } else a.style.display="none";
+  $("#shotOv").classList.add("open");
+}
+let pendingShot=null;
+function showShotPrev(){
+  const p=$("#fShotPrev"); if(pendingShot){ p.src=pendingShot; p.style.display="block"; $("#fShotDel").style.display="inline-flex"; }
+  else { p.removeAttribute("src"); p.style.display="none"; $("#fShotDel").style.display="none"; }
+}
+function shrinkImage(file){
+  return new Promise((res,rej)=>{
+    if(!file || !/^image\//.test(file.type)) return rej(new Error("type"));
+    const url=URL.createObjectURL(file), im=new Image();
+    im.onload=()=>{
+      const W=480, scale=Math.min(1, W/im.width), w=Math.round(im.width*scale);
+      const h=Math.min(Math.round(im.height*scale), 360); // 上のほうだけ使う
+      const c=document.createElement("canvas"); c.width=w; c.height=h;
+      const cx=c.getContext("2d"); cx.fillStyle="#fff"; cx.fillRect(0,0,w,h);
+      cx.drawImage(im,0,0,im.width,Math.round(h/scale),0,0,w,h);
+      URL.revokeObjectURL(url); res(c.toDataURL("image/jpeg",0.72));
+    };
+    im.onerror=()=>{ URL.revokeObjectURL(url); rej(new Error("load")); };
+    im.src=url;
+  });
+}
+async function takeShot(file){
+  try{ pendingShot=await shrinkImage(file); showShotPrev(); toast("写真を入れました。「保存する」で確定します"); }
+  catch(e){ toast("画像を読みこめませんでした"); }
+}
+$("#fShot").addEventListener("change",e=>{ const f=e.target.files&&e.target.files[0]; if(f) takeShot(f); });
+$("#fShotDel").onclick=()=>{ pendingShot=null; $("#fShot").value=""; showShotPrev(); };
+document.addEventListener("paste",e=>{
+  if(!$("#editOv").classList.contains("open")) return;
+  const it=[...(e.clipboardData&&e.clipboardData.items||[])].find(i=>i.type.startsWith("image/"));
+  if(it){ e.preventDefault(); takeShot(it.getAsFile()); }
+});
+$("#autoShot").setAttribute("aria-pressed", state.autoShot);
+$("#autoShot").onclick=()=>{ state.autoShot=!state.autoShot; $("#autoShot").setAttribute("aria-pressed",state.autoShot); save(); render(); };
+
+makeChips(); render();
+</script>
+</body>
+</html>

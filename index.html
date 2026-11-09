@@ -87,6 +87,7 @@ header p{margin:4px 0 0;font-size:.92rem;opacity:.92}
 
 footer{color:var(--sub);font-size:.82rem;padding:24px 0 40px}
 .url-print{display:none}
+.tag.theme{border-color:#f0c9ad;background:#fff4ea;color:#9a4a12;font-weight:700}
 .tag.subj{border-color:#bcd3ea;background:#eef5fc;color:#2b5a8c}
 
 /* thumbnails */
@@ -139,7 +140,7 @@ footer{color:var(--sub);font-size:.82rem;padding:24px 0 40px}
 <header>
   <div class="wrap">
     <h1>授業サイトナビ</h1>
-    <p>全教科・自立活動で使えるサイトを、教科から探してすぐ開けます。QRコードつきの配布プリントも作れます。</p>
+    <p>全教科・自立活動で使えるサイトを、教科やテーマ（防災・食育・お金・家庭学習など）から探してすぐ開けます。QRコードつきの配布プリントも作れます。</p>
     <div class="toolbar">
       <button class="tbtn solid" id="addBtn">＋ サイトを追加</button>
       <button class="tbtn" id="kidsBtn">子どもに見せる（★のサイト）</button>
@@ -151,8 +152,9 @@ footer{color:var(--sub);font-size:.82rem;padding:24px 0 40px}
 
 <main class="wrap">
   <div class="panel">
-    <input class="search" id="q" type="search" placeholder="さがす（例：避難訓練、不審者、情報モラル、九九、タイピング）" aria-label="サイトをさがす">
+    <input class="search" id="q" type="search" placeholder="さがす（例：避難訓練、食育、お金、プライベートゾーン、九九）" aria-label="サイトをさがす">
     <div class="row" id="subjRow"><span class="label">教科</span></div>
+    <div class="row" id="themeRow"><span class="label">テーマ</span></div>
     <div class="row" id="catRow"><span class="label">種類</span></div>
     <div class="row" id="gradeRow"><span class="label">対象</span></div>
     <div class="row"><span class="label">しぼる</span>
@@ -182,6 +184,7 @@ footer{color:var(--sub);font-size:.82rem;padding:24px 0 40px}
       <div class="field"><label for="fName">サイト名（必須）</label><input id="fName" maxlength="60" required></div>
       <div class="field"><label for="fUrl">URL（必須）</label><input id="fUrl" type="text" inputmode="url" autocomplete="off" placeholder="https://"></div>
       <div class="field"><label for="fCat">分類</label><select id="fCat"></select></div>
+      <div class="field"><label>テーマ</label><div class="row" id="fTheme" style="margin-top:0"></div></div>
       <div class="field"><label>教科</label><div class="row" id="fSubj" style="margin-top:0"></div></div>
       <div class="field"><label>対象</label><div class="row" id="fGrades" style="margin-top:0"></div></div>
       <div class="field"><label for="fDesc">メモ・使い方</label><textarea id="fDesc" rows="3" maxlength="200" placeholder="例：5年社会「工業」の導入で使う"></textarea></div>
@@ -298,9 +301,25 @@ const CATS = [
   {id:"moral",   name:"情報モラル",               color:"#2f7d6d"},
   {id:"sped",    name:"特別支援・自立活動・SST",  color:"#d0613a"},
   {id:"safety",  name:"安全・防災・防犯（避難訓練）", color:"#c0392b"},
+  {id:"life",    name:"くらし・いのち（食育・性・環境・お金・人権・交通）", color:"#16807a"},
   {id:"teacher", name:"先生のための資料",         color:"#5b6b70"},
   {id:"mine",    name:"自分で追加したサイト",     color:"#8a5a00"}
 ];
+const THEMES = ["家庭学習","防災・安全","防犯","交通安全","情報モラル","食育","性に関する指導（生命の安全）","環境・SDGs","お金・消費者教育","税の学習","人権・いじめ防止"];
+/* 最初から入っているサイトのテーマ（データ本体とは別に管理） */
+const THEME_MAP = {
+  "防災・安全":["a01","a02","a03","a04","a05","p81","p88","p89","p33"],
+  "防犯":["a01","a06","a07","t11"],
+  "交通安全":["a01","t10","t11"],
+  "情報モラル":["p01","p02","p03","p04","p05","p06"],
+  "食育":["p92","t02","t03"],
+  "性に関する指導（生命の安全）":["t01"],
+  "環境・SDGs":["p93","p22","p92","t04","t05"],
+  "お金・消費者教育":["p87","s03","s06","t06","t07"],
+  "税の学習":["t08"],
+  "人権・いじめ防止":["t09","t01"],
+  "家庭学習":["p11","p12","p13","p82","p21","p54","p87","p86","p02","p91","p31","a03","t02","t04","t07","t08"]
+};
 const SUBJECTS = ["国語","算数","理科","社会","生活","音楽","図工","家庭","体育","外国語","道徳","総合","特活","自立活動","情報"];
 const GRADES = [
   {id:"low", name:"低学年"},{id:"mid", name:"中学年"},{id:"high", name:"高学年"},{id:"tch", name:"先生・保護者"}
@@ -484,6 +503,43 @@ const PRESET = [
    desc:"学校で行う防犯教室や、不審者侵入を想定した防犯訓練の実践事例集。訓練の流れや子どもへの指導内容を考えるときの参考に。",
    subj:["特活","生活","体育"],grades:["tch"],tags:["防犯","不審者対応","防犯訓練","実践事例"],acc:"不要",ok:true},
 
+  /* ---------- くらし・いのち（食育・性・環境・お金・人権・交通） ---------- */
+  {id:"t01",cat:"life",name:"生命（いのち）の安全教育",org:"文部科学省・内閣府",url:"https://www.mext.go.jp/a_menu/danjo/anzen/index2.html",
+   desc:"子どもが性暴力の加害者・被害者・傍観者にならないための教材。発達段階別のスライド教材・動画教材・指導の手引き・指導例動画があり、学校や地域の状況に応じて内容を加除・改変して使える。",
+   hint:"プール学習の前の「プライベートゾーン」の指導や、学級活動・保健の学習に。保護者への周知にも使えます。",
+   subj:["特活","体育","道徳","自立活動"],grades:["low","mid","high","tch"],tags:["性に関する指導","プライベートゾーン","距離感","スライド教材","動画"],acc:"不要",ok:true},
+  {id:"t02",cat:"life",name:"子どもの食育",org:"農林水産省",url:"https://www.maff.go.jp/j/syokuiku/kodomo_navi/learn/index.html",
+   desc:"日本と世界の食べ物、郷土料理、食事バランスガイド、自分の一日の食事の確かめ方などを子ども向けに紹介。ワークシートもある。",
+   subj:["家庭","社会","体育","総合"],grades:["mid","high"],tags:["食育","郷土料理","食事バランスガイド","ワークシート"],acc:"不要",ok:true},
+  {id:"t03",cat:"life",name:"小学生用食育教材「たのしい食事つながる食育」",org:"文部科学省",url:"https://www.mext.go.jp/a_menu/shotou/eiyou/syokuseikatsu.htm",
+   desc:"低・中・高学年別の児童用教材と指導者用資料。手洗い、朝ごはん、主食・主菜、食品ロス、行事食などを学べる。",
+   subj:["家庭","体育","特活","生活"],grades:["low","mid","high","tch"],tags:["食育","給食指導","朝ごはん","食品ロス"],acc:"不要",ok:true},
+  {id:"t04",cat:"life",name:"こどものページ（こども環境省）",org:"環境省",url:"https://www.env.go.jp/kids/index.html",
+   desc:"地球温暖化、ごみと3R、自然と生きもの、化学物質、復興などを子ども向けに説明。「こども環境白書」も読める。",
+   subj:["社会","理科","総合","家庭"],grades:["mid","high"],tags:["環境","温暖化","3R","SDGs"],acc:"不要",ok:true},
+  {id:"t05",cat:"life",name:"環境教育・環境学習STATION",org:"環境省",url:"https://www.env.go.jp/policy/education/",
+   desc:"環境教育の教材やプログラム、体験の場の情報を集めた「環境学習STATION」への入口。先生向け。",
+   subj:["総合","社会","理科"],grades:["tch"],tags:["環境","環境教育","教材","ESD"],acc:"不要",ok:true},
+  {id:"t06",cat:"life",name:"J-FLEC（金融経済教育推進機構）",org:"J-FLEC（金融庁所管の認可法人）",url:"https://www.j-flec.go.jp/",
+   desc:"中立・公正な立場で金融経済教育を進める公的機関。小学生向け「おこづかいから学ぶお金の話」の出張授業（無料）や、学習指導要領に対応した指導案・教材がある。",
+   hint:"講師派遣は開催希望日の45日前までに申しこみが必要です。",
+   subj:["家庭","社会","特活","総合"],grades:["mid","high","tch"],tags:["お金","金銭教育","おこづかい","出張授業"],acc:"不要",ok:true},
+  {id:"t07",cat:"life",name:"にちぎん・学びの部屋",org:"日本銀行",url:"https://www.boj.or.jp/about/education/kyoiku.htm",
+   desc:"お金や日本銀行について家で学べる材料をまとめたページ。オンライン本店見学、お札の数え方の動画、貨幣博物館の「おうちミュージアム」など。",
+   subj:["社会","家庭","算数"],grades:["mid","high"],tags:["お金","日本銀行","お札","見学"],acc:"不要",ok:true},
+  {id:"t08",cat:"life",name:"税の学習コーナー（租税教育）",org:"国税庁",url:"https://www.nta.go.jp/taxes/kids/sozei_kyoiku/index.htm",
+   desc:"子ども向けの「税の学習コーナー」では、入門編・発展編の学習、ゲーム、クイズ、アニメ動画で税を学べる。税務署職員などが来る租税教室の案内もある。",
+   subj:["社会","総合"],grades:["high","tch"],tags:["税","租税教室","6年社会","アニメ"],acc:"不要",ok:true},
+  {id:"t09",cat:"life",name:"こどもの人権を守りましょう",org:"法務省",url:"https://www.moj.go.jp/JINKEN/jinken04_00107.html",
+   desc:"いじめや体罰などからこどもの人権を守る取り組みと相談窓口の案内。人権教室や「人権の花運動」、こども向けページもある。",
+   subj:["道徳","特活","社会"],grades:["mid","high","tch"],tags:["人権","いじめ防止","相談窓口","人権教室"],acc:"不要",ok:true},
+  {id:"t10",cat:"life",name:"交通安全動画（JAF）",org:"JAF（日本自動車連盟）",url:"https://jaf.or.jp/common/safety-drive/online-training/traffic-safety-movie",
+   desc:"子ども向けの交通安全動画。道路の歩き方や自転車の乗り方などを動画で学べる。",
+   subj:["特活","体育","生活"],grades:["low","mid","high"],tags:["交通安全","自転車","動画"],acc:"不要",ok:true},
+  {id:"t11",cat:"life",name:"動画ライブラリー（警視庁）",org:"警視庁",url:"https://www.keishicho.metro.tokyo.lg.jp/mov_lib/list.html",
+   desc:"交通安全や防犯の動画を集めたページ。ピーポくんのアニメで、横断歩道の渡り方や自転車の正しい乗り方などを学べる。",
+   subj:["特活","生活","体育"],grades:["low","mid","high"],tags:["交通安全","防犯","アニメ","動画"],acc:"不要",ok:true},
+
   /* ---------- 先生のための資料 ---------- */
   {id:"p51",cat:"teacher",name:"StuDX Style",org:"文部科学省",url:"https://www.mext.go.jp/studxstyle/",
    desc:"1人1台端末の活用事例集。「慣れる」「つながる」活用から各教科まで探せる。",
@@ -537,11 +593,15 @@ function thumbHtml(s, cls){
 load();
 
 /* ===== 画面の状態 ===== */
-const ui = {q:"", subjs:new Set(), cats:new Set(), grades:new Set(), favOnly:false, noAcc:false, showHidden:false};
+const ui = {q:"", themes:new Set(), subjs:new Set(), cats:new Set(), grades:new Set(), favOnly:false, noAcc:false, showHidden:false};
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const catOf = id => CATS.find(c=>c.id===id) || CATS[CATS.length-1];
+function themesOf(s){
+  if(s.theme) return s.theme;
+  return THEMES.filter(t=>(THEME_MAP[t]||[]).includes(s.id));
+}
 function allSites(){
   const pre = PRESET.map(p => state.edits[p.id] ? Object.assign({},p,state.edits[p.id]) : p);
   return pre.concat(state.custom.map(c=>Object.assign({cat:"mine",org:"自分で追加",acc:"",ok:true,mine:true,subj:[]},c)));
@@ -553,6 +613,12 @@ function safeUrl(u){
 
 /* ===== フィルター部品 ===== */
 function makeChips(){
+  const tr = $("#themeRow");
+  THEMES.forEach(t=>{
+    const b=document.createElement("button"); b.className="chip"; b.textContent=t; b.setAttribute("aria-pressed","false");
+    b.onclick=()=>{ ui.themes.has(t)?ui.themes.delete(t):ui.themes.add(t); b.setAttribute("aria-pressed",ui.themes.has(t)); render(); };
+    tr.appendChild(b);
+  });
   const sr = $("#subjRow");
   SUBJECTS.forEach(sj=>{
     const b=document.createElement("button"); b.className="chip"; b.textContent=sj; b.setAttribute("aria-pressed","false");
@@ -581,11 +647,12 @@ function matches(s){
   if(!ui.showHidden && state.hidden.includes(s.id)) return false;
   if(ui.favOnly && !state.fav.includes(s.id)) return false;
   if(ui.noAcc && s.acc && !s.acc.startsWith("不要")) return false;
+  if(ui.themes.size && !themesOf(s).some(x=>ui.themes.has(x))) return false;
   if(ui.subjs.size && !(s.subj||[]).some(x=>ui.subjs.has(x))) return false;
   if(ui.cats.size && !ui.cats.has(s.cat)) return false;
   if(ui.grades.size && !(s.grades||[]).some(g=>ui.grades.has(g))) return false;
   if(ui.q){
-    const hay = [s.name,s.org,s.desc,s.hint,(s.tags||[]).join(" "),(s.subj||[]).join(" "),catOf(s.cat).name].join(" ").toLowerCase();
+    const hay = [s.name,s.org,s.desc,s.hint,(s.tags||[]).join(" "),(s.subj||[]).join(" "),themesOf(s).join(" "),catOf(s.cat).name].join(" ").toLowerCase();
     const words = ui.q.toLowerCase().split(/[\s、,　]+/).filter(Boolean);
     if(!words.every(w=>hay.includes(w))) return false;
   }
@@ -596,7 +663,7 @@ function matches(s){
 function cardHtml(s){
   const fav = state.fav.includes(s.id), hid = state.hidden.includes(s.id);
   const gtags = (s.grades||[]).map(g=>`<span class="tag">${esc((GRADES.find(x=>x.id===g)||{}).name||"")}</span>`).join("");
-  const kw = (s.subj||[]).map(t=>`<span class="tag subj">${esc(t)}</span>`).join("") + (s.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join("");
+  const kw = themesOf(s).map(t=>`<span class="tag theme">${esc(t)}</span>`).join("") + (s.subj||[]).map(t=>`<span class="tag subj">${esc(t)}</span>`).join("") + (s.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join("");
   const accTag = s.acc ? `<span class="tag acc">登録：${esc(s.acc)}</span>` : "";
   const warn = s.ok===false ? `<span class="tag warn" title="リンク先が変わっている可能性があります">URL要確認</span>` : "";
   const mine = s.mine ? `<span class="tag mine">自分で追加</span>` : "";
@@ -693,6 +760,8 @@ let editingId=null;
   $("#fCat").innerHTML = CATS.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join("");
   $("#fGrades").innerHTML = GRADES.map(g=>`<button type="button" class="chip" data-g="${g.id}" aria-pressed="false">${esc(g.name)}</button>`).join("");
   $("#fGrades").addEventListener("click",e=>{ const b=e.target.closest("[data-g]"); if(b) b.setAttribute("aria-pressed", b.getAttribute("aria-pressed")!=="true"); });
+  $("#fTheme").innerHTML = THEMES.map(t=>`<button type="button" class="chip" data-th="${esc(t)}" aria-pressed="false">${esc(t)}</button>`).join("");
+  $("#fTheme").addEventListener("click",e=>{ const b=e.target.closest("[data-th]"); if(b) b.setAttribute("aria-pressed", b.getAttribute("aria-pressed")!=="true"); });
   $("#fSubj").innerHTML = SUBJECTS.map(s=>`<button type="button" class="chip" data-sj="${esc(s)}" aria-pressed="false">${esc(s)}</button>`).join("");
   $("#fSubj").addEventListener("click",e=>{ const b=e.target.closest("[data-sj]"); if(b) b.setAttribute("aria-pressed", b.getAttribute("aria-pressed")!=="true"); });
 })();
@@ -705,6 +774,7 @@ function openEdit(id){
   $("#fCat").value = s?s.cat:"mine"; $("#fDesc").value = s?(s.desc||""):""; $("#fTags").value = s?(s.tags||[]).join("、"):"";
   [$("#fName"),$("#fUrl"),$("#fCat")].forEach(el=>el.disabled=!!isPreset);
   document.querySelectorAll("#fGrades [data-g]").forEach(b=>b.setAttribute("aria-pressed", s?(s.grades||[]).includes(b.dataset.g):"false"));
+  document.querySelectorAll("#fTheme [data-th]").forEach(b=>b.setAttribute("aria-pressed", s?themesOf(s).includes(b.dataset.th):"false"));
   document.querySelectorAll("#fSubj [data-sj]").forEach(b=>b.setAttribute("aria-pressed", s?(s.subj||[]).includes(b.dataset.sj):"false"));
   $("#delBtn").style.display = (s && s.mine) ? "inline-flex" : (isPreset && state.edits[id] ? "inline-flex" : "none");
   $("#delBtn").textContent = isPreset ? "メモを元にもどす" : "削除";
@@ -718,17 +788,18 @@ $("#editForm").addEventListener("submit",e=>{
   const grades=[...document.querySelectorAll("#fGrades [data-g]")].filter(b=>b.getAttribute("aria-pressed")==="true").map(b=>b.dataset.g);
   const tags=$("#fTags").value.split(/[、,，\s]+/).map(t=>t.trim()).filter(Boolean).slice(0,8);
   const desc=$("#fDesc").value.trim();
+  const theme=[...document.querySelectorAll("#fTheme [data-th]")].filter(b=>b.getAttribute("aria-pressed")==="true").map(b=>b.dataset.th);
   const subj=[...document.querySelectorAll("#fSubj [data-sj]")].filter(b=>b.getAttribute("aria-pressed")==="true").map(b=>b.dataset.sj);
   const isPreset = editingId && PRESET.some(p=>p.id===editingId);
   if(isPreset){
-    state.edits[editingId]={desc,tags,grades,subj};
+    state.edits[editingId]={desc,tags,grades,subj,theme};
     if(pendingShot) state.shots[editingId]=pendingShot; else delete state.shots[editingId]; save(); render(); $("#editOv").classList.remove("open"); toast("メモを保存しました"); return;
   }
   const name=$("#fName").value.trim(); let url=$("#fUrl").value.trim();
   if(url && !/^https?:\/\//i.test(url)) url="https://"+url;
   if(!name){ $("#fErr").textContent="サイト名を入れてください。"; return; }
   if(!safeUrl(url)){ $("#fErr").textContent="URLは https:// から始まる形で入れてください。"; return; }
-  const item={id: editingId || ("c"+Date.now().toString(36)), name, url:safeUrl(url), cat:$("#fCat").value, desc, tags, grades, subj};
+  const item={id: editingId || ("c"+Date.now().toString(36)), name, url:safeUrl(url), cat:$("#fCat").value, desc, tags, grades, subj, theme};
   if(pendingShot) state.shots[item.id]=pendingShot; else delete state.shots[item.id];
   const i=state.custom.findIndex(c=>c.id===item.id);
   i<0 ? state.custom.push(item) : (state.custom[i]=item);
@@ -798,7 +869,8 @@ $("#importBtn").onclick=()=>{
       custom: d.custom.filter(c=>c && c.id && c.name && safeUrl(c.url)).map(c=>({id:String(c.id),name:String(c.name).slice(0,60),url:safeUrl(c.url),
         cat:CATS.some(x=>x.id===c.cat)?c.cat:"mine",desc:String(c.desc||"").slice(0,200),tags:Array.isArray(c.tags)?c.tags.map(String).slice(0,8):[],
         grades:Array.isArray(c.grades)?c.grades.filter(g=>GRADES.some(x=>x.id===g)):[],
-        subj:Array.isArray(c.subj)?c.subj.filter(x=>SUBJECTS.includes(x)):[]})),
+        subj:Array.isArray(c.subj)?c.subj.filter(x=>SUBJECTS.includes(x)):[],
+        theme:Array.isArray(c.theme)?c.theme.filter(x=>THEMES.includes(x)):[]})),
       fav: d.fav.map(String), hidden: Array.isArray(d.hidden)?d.hidden.map(String):[], edits: (d.edits&&typeof d.edits==="object")?d.edits:{},
       shots: Object.fromEntries(Object.entries((d.shots&&typeof d.shots==="object")?d.shots:{}).filter(([k,v])=>typeof v==="string"&&/^data:image\/(jpeg|png|webp);base64,/.test(v)&&v.length<400000)),
       autoShot: d.autoShot!==false

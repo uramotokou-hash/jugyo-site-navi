@@ -90,6 +90,33 @@ footer{color:var(--sub);font-size:.82rem;padding:24px 0 40px}
 .tag.theme{border-color:#f0c9ad;background:#fff4ea;color:#9a4a12;font-weight:700}
 .tag.subj{border-color:#bcd3ea;background:#eef5fc;color:#2b5a8c}
 
+
+/* filters */
+.filters{display:grid;gap:8px;margin-top:12px}
+.fgroup{display:grid;grid-template-columns:7.2em 1fr;border:1.5px solid var(--gc-line);border-radius:12px;overflow:hidden;background:#fff}
+.flabel{background:var(--gc-soft);color:var(--gc);font-weight:700;display:flex;align-items:center;gap:5px;padding:8px 10px;border-right:1.5px solid var(--gc-line);font-size:.95rem;white-space:nowrap}
+.fn:not(:empty){background:var(--gc);color:#fff;border-radius:999px;font-size:.72rem;padding:0 7px;margin-left:2px}
+.fchips{display:flex;flex-wrap:wrap;gap:6px;padding:8px}
+.fgroup .chip{border-color:var(--gc-line);padding:5px 11px}
+.fgroup .chip:hover{background:var(--gc-soft)}
+.fgroup .chip[aria-pressed="true"]{background:var(--gc);border-color:var(--gc);color:#fff}
+.chip .cdot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:0}
+.chip[aria-pressed="true"] .cdot{display:none}
+.g-subj{--gc:#2b5a8c;--gc-soft:#eef5fc;--gc-line:#bcd3ea}
+.g-theme{--gc:#a14d10;--gc-soft:#fff4ea;--gc-line:#f0c9ad}
+.g-cat{--gc:#2f7d6d;--gc-soft:#e3f2ee;--gc-line:#bfded6}
+.g-grade{--gc:#6a4aa0;--gc-soft:#f3effa;--gc-line:#d6c9ec}
+.g-opt{--gc:#7a6200;--gc-soft:#fffbe6;--gc-line:#eadf9f}
+.fbar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:10px;font-size:.9rem;color:var(--sub)}
+.fbar .btn{padding:5px 12px}
+.shotset{margin-top:10px;font-size:.88rem;color:var(--sub)}
+.shotset summary{cursor:pointer;font-weight:700}
+.shotset small{display:block;margin-top:4px}
+@media (max-width:600px){
+  .fgroup{grid-template-columns:1fr}
+  .flabel{border-right:none;border-bottom:1.5px solid var(--gc-line);padding:5px 10px}
+}
+
 /* thumbnails */
 .head{display:flex;gap:10px;align-items:flex-start;padding-right:34px}
 .thumb{flex:0 0 124px;width:124px;height:78px;border-radius:8px;overflow:hidden;border:1px solid var(--line);background:#f1f4f3;position:relative;cursor:zoom-in;padding:0}
@@ -153,19 +180,25 @@ footer{color:var(--sub);font-size:.82rem;padding:24px 0 40px}
 <main class="wrap">
   <div class="panel">
     <input class="search" id="q" type="search" placeholder="さがす（例：避難訓練、食育、お金、プライベートゾーン、九九）" aria-label="サイトをさがす">
-    <div class="row" id="subjRow"><span class="label">教科</span></div>
-    <div class="row" id="themeRow"><span class="label">テーマ</span></div>
-    <div class="row" id="catRow"><span class="label">種類</span></div>
-    <div class="row" id="gradeRow"><span class="label">対象</span></div>
-    <div class="row"><span class="label">しぼる</span>
-      <button class="chip" id="favOnly" aria-pressed="false">★お気に入りだけ</button>
-      <button class="chip" id="noAcc" aria-pressed="false">登録なしで使える</button>
-      <button class="chip" id="showHidden" aria-pressed="false">かくしたサイトも表示</button>
+    <div class="filters">
+      <div class="fgroup g-subj"><div class="flabel">📚 教科<span class="fn" data-n="subjs"></span></div><div class="fchips" id="subjRow"></div></div>
+      <div class="fgroup g-theme"><div class="flabel">🏷️ テーマ<span class="fn" data-n="themes"></span></div><div class="fchips" id="themeRow"></div></div>
+      <div class="fgroup g-cat"><div class="flabel">🗂️ 種類<span class="fn" data-n="cats"></span></div><div class="fchips" id="catRow"></div></div>
+      <div class="fgroup g-grade"><div class="flabel">👤 対象<span class="fn" data-n="grades"></span></div><div class="fchips" id="gradeRow"></div></div>
+      <div class="fgroup g-opt"><div class="flabel">⭐ しぼる</div><div class="fchips">
+        <button class="chip" id="favOnly" aria-pressed="false">★お気に入りだけ</button>
+        <button class="chip" id="noAcc" aria-pressed="false">登録なしで使える</button>
+        <button class="chip" id="showHidden" aria-pressed="false">かくしたサイトも表示</button>
+      </div></div>
     </div>
-    <div class="row"><span class="label">画面</span>
-      <button class="chip" id="autoShot" aria-pressed="true">サイトの画面を自動で表示</button>
-      <small style="color:var(--sub)">無料の画面写真サービス（WordPress.com mShots、取れないときは thum.io）にサイトのURLを送って表示します。写真がないときはサイトのアイコン（Googleのファビコン表示）を出します。出ないときは、各サイトの「メモ・画面を登録」から自分のスクショを入れられます。</small>
+    <div class="fbar">
+      <span id="activeInfo">しぼりこみなし（すべて表示）</span>
+      <button class="btn ghost" id="clearAll" hidden>しぼりこみを全部はずす</button>
     </div>
+    <details class="shotset"><summary>サイトの画面（サムネイル）の設定</summary>
+      <div class="row"><button class="chip" id="autoShot" aria-pressed="true">サイトの画面を自動で表示</button></div>
+      <small>無料の画面写真サービス（WordPress.com mShots、取れないときは thum.io）にサイトのURLを送って表示します。はじめて表示するサイトは「準備中」の画面が出ることがあり、少し待つと自動で読みこみ直します。写真がないときはサイトのアイコン（Googleのファビコン表示）を出します。自分のスクショは各サイトの「メモ・画面を登録」から入れられます。</small>
+    </details>
   </div>
   <div class="count" id="count"></div>
   <div id="list"></div>
@@ -294,16 +327,16 @@ footer{color:var(--sub);font-size:.82rem;padding:24px 0 40px}
 <script>
 /* ===== 種類・教科・対象 ===== */
 const CATS = [
-  {id:"video",   name:"動画で学ぶ",               color:"#c2477a"},
-  {id:"print",   name:"プリント・ドリル",         color:"#e8902a"},
-  {id:"tool",    name:"Webアプリ・ツール",        color:"#7a58b8"},
-  {id:"research",name:"調べ学習・資料・地図",     color:"#3b6fb6"},
-  {id:"moral",   name:"情報モラル",               color:"#2f7d6d"},
-  {id:"sped",    name:"特別支援・自立活動・SST",  color:"#d0613a"},
-  {id:"safety",  name:"安全・防災・防犯（避難訓練）", color:"#c0392b"},
-  {id:"life",    name:"くらし・いのち（健康・食育・性・環境・お金・人権・交通・キャリア・国際）", color:"#16807a"},
-  {id:"teacher", name:"先生のための資料",         color:"#5b6b70"},
-  {id:"mine",    name:"自分で追加したサイト",     color:"#8a5a00"}
+  {id:"video", short:"動画",   name:"動画で学ぶ",               color:"#c2477a"},
+  {id:"print", short:"プリント・ドリル",   name:"プリント・ドリル",         color:"#e8902a"},
+  {id:"tool", short:"アプリ・ツール",    name:"Webアプリ・ツール",        color:"#7a58b8"},
+  {id:"research", short:"調べ学習・資料",name:"調べ学習・資料・地図",     color:"#3b6fb6"},
+  {id:"moral", short:"情報モラル",   name:"情報モラル",               color:"#2f7d6d"},
+  {id:"sped", short:"特別支援・SST",    name:"特別支援・自立活動・SST",  color:"#d0613a"},
+  {id:"safety", short:"安全・防災・防犯",  name:"安全・防災・防犯（避難訓練）", color:"#c0392b"},
+  {id:"life", short:"くらし・いのち",    name:"くらし・いのち（健康・食育・性・環境・お金・人権・交通・キャリア・国際）", color:"#16807a"},
+  {id:"teacher", short:"先生向け資料", name:"先生のための資料",         color:"#5b6b70"},
+  {id:"mine", short:"自分で追加",    name:"自分で追加したサイト",     color:"#8a5a00"}
 ];
 const THEMES = ["家庭学習","防災・安全","防犯","交通安全","情報モラル","食育","性に関する指導（生命の安全）","環境・SDGs","お金・消費者教育","税の学習","人権・いじめ防止","健康（歯・目・メディア）","キャリア教育","国際理解"];
 /* 最初から入っているサイトのテーマ（データ本体とは別に管理） */
@@ -667,7 +700,8 @@ function makeChips(){
   });
   const cr = $("#catRow");
   CATS.forEach(c=>{
-    const b=document.createElement("button"); b.className="chip"; b.textContent=c.name; b.setAttribute("aria-pressed","false");
+    const b=document.createElement("button"); b.className="chip"; b.title=c.name; b.setAttribute("aria-pressed","false");
+    b.innerHTML=`<span class="cdot" style="background:${c.color}"></span>${esc(c.short||c.name)}`;
     b.onclick=()=>{ ui.cats.has(c.id)?ui.cats.delete(c.id):ui.cats.add(c.id); b.setAttribute("aria-pressed",ui.cats.has(c.id)); render(); };
     cr.appendChild(b);
   });
@@ -681,6 +715,7 @@ function makeChips(){
     const b=$(sel); b.onclick=()=>{ ui[k]=!ui[k]; b.setAttribute("aria-pressed",ui[k]); render(); };
   });
   $("#q").addEventListener("input",e=>{ ui.q=e.target.value.trim(); render(); });
+  $("#clearAll").onclick=clearAll;
 }
 
 function matches(s){
@@ -697,6 +732,26 @@ function matches(s){
     if(!words.every(w=>hay.includes(w))) return false;
   }
   return true;
+}
+
+/* ===== しぼりこみの状態表示 ===== */
+function updateActive(){
+  document.querySelectorAll(".fn").forEach(el=>{ const n=ui[el.dataset.n].size; el.textContent = n?String(n):""; });
+  const parts=[];
+  if(ui.q) parts.push(`「${ui.q}」`);
+  [...ui.subjs].forEach(x=>parts.push(x));
+  [...ui.themes].forEach(x=>parts.push(x));
+  [...ui.cats].forEach(x=>parts.push((CATS.find(c=>c.id===x)||{}).short||x));
+  [...ui.grades].forEach(x=>parts.push((GRADES.find(g=>g.id===x)||{}).name||x));
+  if(ui.favOnly) parts.push("お気に入り"); if(ui.noAcc) parts.push("登録なし");
+  $("#activeInfo").textContent = parts.length ? "しぼりこみ中： "+parts.join(" ／ ") : "しぼりこみなし（すべて表示）";
+  $("#clearAll").hidden = !parts.length;
+}
+function clearAll(){
+  ["subjs","themes","cats","grades"].forEach(k=>ui[k].clear());
+  ui.favOnly=false; ui.noAcc=false; ui.q=""; $("#q").value="";
+  document.querySelectorAll(".filters .chip").forEach(b=>{ if(b.id!=="showHidden"||!ui.showHidden) b.setAttribute("aria-pressed","false"); });
+  render();
 }
 
 /* ===== 一覧表示 ===== */
@@ -730,6 +785,7 @@ function cardHtml(s){
 function render(){
   const sites = allSites().filter(matches);
   $("#count").textContent = `${sites.length}件のサイト`;
+  updateActive();
   const list = $("#list");
   if(!sites.length){
     list.innerHTML = `<div class="empty">条件に合うサイトがありません。<br>しぼりこみを外すか、「＋ サイトを追加」で登録してください。</div>`;
@@ -976,14 +1032,16 @@ $("#autoShot").setAttribute("aria-pressed", state.autoShot);
 $("#autoShot").onclick=()=>{ state.autoShot=!state.autoShot; $("#autoShot").setAttribute("aria-pressed",state.autoShot); save(); render(); };
 
 makeChips(); render();
-/* 画面写真サービスは、はじめての読みこみで「準備中」の画像を返すことがあるため、少し待って一度だけ読みこみ直す */
-function retryAutoShots(n){
-  document.querySelectorAll('img[data-auto]:not([data-backup])').forEach(im=>{
-    im.src = im.src.replace(/&r=\d+$/,"") + "&r=" + n;
-  });
-}
-setTimeout(()=>retryAutoShots(1), 9000);
-setTimeout(()=>retryAutoShots(2), 30000);
+/* 画面写真サービスは、はじめての読みこみで「準備中」の画像を返すことがある。
+   準備中かどうかは画像から判別できないため、画像ごとに少し間をおいて最大3回読みこみ直す
+   （遅れて表示された画像や、しぼりこみで作り直した画像にも効く） */
+const RETRY_WAIT=[8000,25000,70000];
+document.addEventListener("load",e=>{
+  const t=e.target; if(!t || t.tagName!=="IMG" || !t.dataset.auto || t.dataset.backup) return;
+  const n=+(t.dataset.r||0); if(n>=RETRY_WAIT.length) return;
+  t.dataset.r=n+1;
+  setTimeout(()=>{ if(t.isConnected && !t.dataset.backup) t.src=t.src.replace(/&r=\d+$/,"")+"&r="+(n+1); }, RETRY_WAIT[n]);
+},true);
 </script>
 </body>
 </html>
